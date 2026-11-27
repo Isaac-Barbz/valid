@@ -11,8 +11,19 @@ function hotRank(score: number, createdAt: string): number {
   return Math.sign(score) * order + seconds / 45000;
 }
 
-export function sortPosts(posts: Post[], sort: SortMode): Post[] {
+/**
+ * Discovery rank for v/thestreets: hot rank, but untagged drops act ~12h older
+ * and low-engagement ones ~6h older. Mirrors public.street_rank().
+ */
+function streetRank(post: Post): number {
+  const untagged = post.tags.length === 0 ? 1 : 0;
+  const quiet = post.score + post.commentCount < 3 ? 0.5 : 0;
+  return hotRank(post.score, post.createdAt) - untagged - quiet;
+}
+
+export function sortPosts(posts: Post[], sort: SortMode, options: { street?: boolean } = {}): Post[] {
   const sorted = [...posts];
+  if (sort === "hot" && options.street) return sorted.sort((a, b) => streetRank(b) - streetRank(a));
   switch (sort) {
     case "new":
       return sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt));

@@ -7,8 +7,19 @@ export const TERMS = {
   brand: "Valid",
   post: { one: "drop", many: "drops", action: "Drop it", pending: "Dropping…", create: "New drop" },
   comment: { one: "comment", many: "comments", action: "Comment", reply: "Reply" },
-  community: { one: "community", many: "communities", prefix: "c/" },
+  community: {
+    one: "community",
+    many: "communities",
+    prefix: "v/",
+    home: "Home community",
+    alsoDrop: "Also drop it in",
+    suggested: "Suggested",
+    claimedTags: "Claimed tags",
+    popping: "Popping in",
+  },
+  tag: { prefix: "#", one: "tag", many: "tags", trending: "Trending", talkingAbout: "Communities that talk about" },
   user: { prefix: "u/" },
+  settings: { title: "Settings", look: "Your look", density: "Feed density", theme: "Theme", accent: "Accent" },
   /** Upvotes are "valid" ("12 valid"); downvotes keep plain wording. */
   vote: { up: "Valid", score: "valid", down: "Downvote" },
   friend: {
@@ -35,7 +46,12 @@ export const TERMS = {
     song: "Profile song",
     online: "Online now",
     message: "Message",
-    customize: "Customize my page",
+    customize: "Customize your space",
+    links: "Links",
+    photos: "Photos",
+    pinned: "Pinned drop",
+    listening: "Currently listening to",
+    watching: "Currently watching",
   },
 } as const;
 

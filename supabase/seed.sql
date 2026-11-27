@@ -7,5 +7,6 @@ insert into public.communities (slug, name, description) values
   ('style', 'Style', 'Fashion, hair, beauty, and fits.'),
   ('sports', 'Sports', 'Scores, trades, and highlights.'),
   ('food', 'Food', 'Recipes, restaurants, and late-night snacks.'),
-  ('askvalid', 'Ask Valid', 'Ask anything. Get real answers.')
+  ('askvalid', 'Ask Valid', 'Ask anything. Get real answers.'),
+  ('thestreets', 'The Streets', 'Any drop can land here. Tag it and the right communities will find it.')
 on conflict (slug) do nothing;

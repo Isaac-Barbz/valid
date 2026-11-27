@@ -11,17 +11,18 @@ interface FeedProps {
   sort: SortMode;
   communitySlug?: string;
   authorUsername?: string;
+  tag?: string;
 }
 
-export async function Feed({ sort, communitySlug, authorUsername }: FeedProps) {
-  const posts = await getFeed({ sort, communitySlug, authorUsername });
+export async function Feed({ sort, communitySlug, authorUsername, tag }: FeedProps) {
+  const posts = await getFeed({ sort, communitySlug, authorUsername, tag });
 
   if (posts.length === 0) {
     return (
       <Card className="flex flex-col items-center gap-3 p-10 text-center">
         <p className="font-semibold">No {TERMS.post.many} yet</p>
         <p className="text-sm text-text-muted">Be the first to start the conversation.</p>
-        <Link href={communitySlug ? `/submit?c=${communitySlug}` : "/submit"} className={buttonStyles()}>
+        <Link href={communitySlug ? `/submit?v=${communitySlug}` : "/submit"} className={buttonStyles()}>
           {TERMS.post.create}
         </Link>
       </Card>
@@ -29,7 +30,7 @@ export async function Feed({ sort, communitySlug, authorUsername }: FeedProps) {
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-feed">
       {posts.map((post) => (
         <li key={post.id}>
           <PostCard post={post} />
@@ -41,7 +42,7 @@ export async function Feed({ sort, communitySlug, authorUsername }: FeedProps) {
 
 export function FeedSkeleton() {
   return (
-    <ul className="flex flex-col gap-3" aria-busy aria-label="Loading posts">
+    <ul className="flex flex-col gap-3" aria-busy aria-label={`Loading ${TERMS.post.many}`}>
       {[0, 1, 2].map((i) => (
         <li key={i}>
           <Card className="flex animate-pulse flex-col gap-3 p-4">

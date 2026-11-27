@@ -50,7 +50,8 @@ user may read and write. Never add the `service_role`/secret key to this app.
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In the SQL editor, run the files in `supabase/migrations/` in order
-   (`20261126000000_foundation.sql`, then `20261127000000_profiles.sql`),
+   (`20261126000000_foundation.sql`, `20261127000000_profiles.sql`, then
+   `20261128000000_streets_tags_spaces.sql`),
    then `supabase/seed.sql` for the starter communities. (Or with the Supabase
    CLI: `supabase link` then `supabase db push`.)
 3. Auth → URL Configuration: set the Site URL to the Vercel URL and add
@@ -61,7 +62,8 @@ user may read and write. Never add the `service_role`/secret key to this app.
 5. Set the two environment variables above.
 
 Free-plan notes: Supabase Storage's free plan includes 1 GB, plenty for
-WebP banners at a few hundred KB each. The built-in email sender is rate-limited (a few emails per
+WebP banners and space photos at a few hundred KB each (up to 9 photos plus a
+banner and a background per person). The built-in email sender is rate-limited (a few emails per
 hour), which is fine for testing; free projects pause after a week without
 activity and can be resumed from the dashboard.
 
@@ -79,13 +81,27 @@ and reports, all with Row Level Security.
   `remove_content()` to take it down.
 - Scores and comment counts are kept in sync by triggers; users cannot write
   them.
-- Profiles carry the MySpace-style fields (mood, status, blurbs, song, solid
-  color/background/font ids, banner path). `friendships` holds requests and
+- Profiles carry the MySpace-style fields (mood, status, blurbs, song, banner
+  path), a `home_community_id`, and `layout`: validated JSON (checked by
+  `is_valid_layout()` and `layout_paths_owned()`) with the block order,
+  colors, font, card shape/style, background, links, photos, pinned drop, and
+  now playing. `friendships` holds requests and
   accepted friends (one row per pair), `top_friends` the ordered Top 8 (only
   accepted friends), and `profile_comments` each person's wall (the owner and
   their friends can write). Banners live in the public `profile-media`
   storage bucket under each user's own folder (2 MB max, resized to WebP in
   the browser first). `touch_last_seen()` powers "Online now".
+- **v/thestreets** is the default open community. Drops carry `post_tags`
+  (lowercase, max 10, only the author tags). Communities claim tags in
+  `community_tags` (moderators only); `community_listings` cross-lists a drop
+  into other communities: authors can "also drop it in" up to 3, moderators
+  accept or dismiss v/thestreets drops that match their claimed tags (the
+  Suggested queue). `post_feed` exposes `tags` and `street_rank` (hot rank
+  with untagged and low-engagement drops lower); `trending_tags` covers the
+  last 7 days.
+- Personal look (theme, feed density, accent) is per device in
+  `localStorage` (`valid-look`), applied by an inline script before first
+  paint. Dark is the default.
 
 ## Scripts
 

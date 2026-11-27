@@ -3,6 +3,7 @@ import type { Comment, Community, Post } from "@/lib/types";
 /** Seed content for demo mode (no Supabase configured). Nothing here is saved. */
 
 export const mockCommunities: Community[] = [
+  { id: "c-thestreets", slug: "thestreets", name: "The Streets", description: "Any drop can land here. Tag it and the right communities will find it." },
   { id: "c-general", slug: "general", name: "General", description: "Anything and everything." },
   { id: "c-tech", slug: "tech", name: "Tech", description: "Gadgets, apps, code, and the future." },
   { id: "c-music", slug: "music", name: "Music", description: "New drops, old favorites, and hot takes." },
@@ -21,18 +22,24 @@ interface SeedPost {
   body: string;
   score: number;
   minutesAgo: number;
+  tags?: string[];
 }
 
 const seedPosts: SeedPost[] = [
   { id: "p1", community: "askvalid", author: null, title: "What's a take you have that would get you ratio'd everywhere else?", body: "This is the place. Go lowkey if you need to. I'll start: pineapple on pizza is elite and I'm tired of pretending it isn't.", score: 842, minutesAgo: 95 },
-  { id: "p2", community: "tech", author: "devdiaries", title: "I replaced every app on my home screen with one I built myself. Here's what I learned", body: "Six months, eleven apps, a lot of late nights. The short version: the hardest part wasn't the code, it was deciding what to leave out.", score: 1290, minutesAgo: 60 * 7 },
-  { id: "p3", community: "music", author: "basslinebrie", title: "Albums that hit different on the second listen?", body: "Some records just don't land the first time. Which ones grew on you?", score: 311, minutesAgo: 40 },
-  { id: "p4", community: "style", author: "fitcheck_fran", title: "Silk press lasted 3 weeks in humidity. My full routine inside", body: "Heat protectant, low heat, wrap every night, and a satin pillowcase. Details in the comments.", score: 523, minutesAgo: 60 * 3 },
+  { id: "p2", community: "tech", author: "devdiaries", title: "I replaced every app on my home screen with one I built myself. Here's what I learned", body: "Six months, eleven apps, a lot of late nights. The short version: the hardest part wasn't the code, it was deciding what to leave out.", score: 1290, minutesAgo: 60 * 7, tags: ["apps", "buildinpublic"] },
+  { id: "p3", community: "music", author: "basslinebrie", title: "Albums that hit different on the second listen?", body: "Some records just don't land the first time. Which ones grew on you?", score: 311, minutesAgo: 40, tags: ["albums", "music"] },
+  { id: "p4", community: "style", author: "fitcheck_fran", title: "Silk press lasted 3 weeks in humidity. My full routine inside", body: "Heat protectant, low heat, wrap every night, and a satin pillowcase. Details in the comments.", score: 523, minutesAgo: 60 * 3, tags: ["silkpress", "hair"] },
   { id: "p5", community: "gaming", author: null, title: "Unpopular opinion: games were better when they shipped finished", body: "Day-one patches the size of the game itself shouldn't be normal.", score: 2104, minutesAgo: 60 * 26 },
-  { id: "p6", community: "food", author: "midnightmunch", title: "Rate my 2am grilled cheese setup", body: "Sourdough, sharp cheddar, a little mayo on the outside. Low and slow.", score: 97, minutesAgo: 18 },
+  { id: "p6", community: "food", author: "midnightmunch", title: "Rate my 2am grilled cheese setup", body: "Sourdough, sharp cheddar, a little mayo on the outside. Low and slow.", score: 97, minutesAgo: 18, tags: ["latenight", "grilledcheese"] },
   { id: "p7", community: "sports", author: "boxscore_ben", title: "Game thread: who's watching tonight?", body: "Drop your predictions before tip-off.", score: 64, minutesAgo: 9 },
   { id: "p8", community: "general", author: "valid_team", title: "Welcome to Valid 👋", body: "A place to talk about anything, as yourself or lowkey. Be kind, report what breaks the rules, and keep it valid.", score: 3050, minutesAgo: 60 * 48 },
-  { id: "p10", community: "style", author: "starlight_jas", title: "Rate my page layout 1–10, be honest", body: "Spent all night on the colors. Rose on blush, bold font, Top 8 finally sorted.", score: 188, minutesAgo: 60 * 20 },
+  { id: "p10", community: "style", author: "starlight_jas", title: "Rate my page layout 1–10, be honest", body: "Spent all night on the colors. Rose on blush, bold font, Top 8 finally sorted.", score: 188, minutesAgo: 60 * 20, tags: ["myspace", "glowup"] },
+  { id: "s1", community: "thestreets", author: "jade_wav", title: "Knotless braids took 7 hours and I'd do it again", body: "Medium length, 30 inch. Bring snacks and a charger. #braids #protectivestyles", score: 412, minutesAgo: 70, tags: ["braids", "protectivestyles"] },
+  { id: "s2", community: "thestreets", author: null, title: "Who else still has their 2007 profile song memorized?", body: "Asking for me. #myspace #nostalgia", score: 268, minutesAgo: 45, tags: ["myspace", "nostalgia"] },
+  { id: "s3", community: "thestreets", author: "lulu_bakes", title: "Banana bread but make it brown butter", body: "Brown the butter, double the vanilla, thank me later. #baking", score: 156, minutesAgo: 120, tags: ["baking", "recipes"] },
+  { id: "s4", community: "thestreets", author: "theo_codes", title: "First apartment setup on a $0 budget", body: "Curb finds, a borrowed drill, and a lot of patience.", score: 2, minutesAgo: 25 },
+  { id: "s5", community: "thestreets", author: "nia_glow", title: "Edges laid with just water and a toothbrush, is that wild?", body: "No gel today. #edges #hair", score: 97, minutesAgo: 200, tags: ["edges", "hair"] },
   { id: "p9", community: "tech", author: null, title: "Is it just me or did every app get worse this year?", body: "More ads, more subscriptions, fewer features.", score: -12, minutesAgo: 60 * 5 },
 ];
 
@@ -73,6 +80,7 @@ export function mockPosts(now: number): Post[] {
       score: seed.score,
       commentCount: seedComments.filter((c) => c.postId === seed.id).length,
       createdAt: minutesAgo(seed.minutesAgo, now),
+      tags: seed.tags ?? [],
       viewerVote: 0,
     };
   });
@@ -93,3 +101,20 @@ export function mockComments(postId: string, now: number): Comment[] {
       viewerVote: 0,
     }));
 }
+
+/** Tags each demo community has claimed (by slug). */
+export const mockClaimedTags: Record<string, string[]> = {
+  style: ["braids", "silkpress", "edges", "hair", "protectivestyles"],
+  food: ["baking", "recipes", "grilledcheese"],
+  music: ["albums", "playlists"],
+  general: ["myspace", "nostalgia"],
+};
+
+/** Drops shown in a community besides the one they were posted to (accepted or dismissed). */
+export const mockListings: { community: string; postId: string; status: "accepted" | "dismissed" }[] = [
+  { community: "style", postId: "s1", status: "accepted" },
+  { community: "general", postId: "s2", status: "accepted" },
+];
+
+/** Communities the demo "you" moderates, so the Suggested queue can be previewed. */
+export const mockModeratedBy: Record<string, string[]> = { starlight_jas: ["style", "food"] };

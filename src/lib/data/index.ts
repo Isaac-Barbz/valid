@@ -2,25 +2,28 @@ import "server-only";
 
 import { connection } from "next/server";
 
-import { isSupabaseConfigured } from "@/lib/config";
+import { DEFAULT_COMMUNITY, isSupabaseConfigured } from "@/lib/config";
 import { buildCommentTree, sortPosts } from "@/lib/ranking";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ACCENTS, BACKGROUNDS, DEFAULT_THEME, FONTS, type ProfileTheme } from "@/lib/profile-theme";
+import { readLayout } from "@/lib/profile-layout-schema";
 import type {
   Comment,
   CommentNode,
   Community,
+  CommunityWithTags,
   Friendship,
   PersonSummary,
+  PoppingCommunity,
   Post,
   Profile,
   ProfileComment,
   SortMode,
+  TrendingTag,
   Viewer,
   VoteValue,
 } from "@/lib/types";
 
-import { mockComments, mockCommunities, mockPosts } from "./mock";
+import { mockClaimedTags, mockComments, mockCommunities, mockListings, mockModeratedBy, mockPosts } from "./mock";
 import { DEMO_VIEWER, demoIncomingRequests, mockAreFriends, mockProfile, mockTopFriends, mockWall } from "./mock-profiles";
 
 /**
@@ -47,6 +50,7 @@ interface PostFeedRow {
   score: number;
   comment_count: number;
   created_at: string;
+  tags: string[];
 }
 
 interface CommentFeedRow {
@@ -66,7 +70,7 @@ interface VoteRow {
 }
 
 const POST_COLUMNS =
-  "id, community_slug, community_name, author_username, title, body, score, comment_count, created_at";
+  "id, community_slug, community_name, author_username, title, body, score, comment_count, created_at, tags";
 
 function toPost(row: PostFeedRow, votes: Map<string, VoteValue>): Post {
   return {
@@ -78,6 +82,7 @@ function toPost(row: PostFeedRow, votes: Map<string, VoteValue>): Post {
     score: row.score,
     commentCount: row.comment_count,
     createdAt: row.created_at,
+    tags: row.tags,
     viewerVote: votes.get(row.id) ?? 0,
   };
 }
@@ -142,32 +147,58 @@ export async function getCommunity(slug: string): Promise<Community | null> {
 
 interface FeedOptions {
   sort: SortMode;
+  /** A community's own drops plus the ones accepted into it from elsewhere. */
   communitySlug?: string;
-  /** Only this person's named (not anonymous) posts. */
+  /** Only this person's named (not lowkey) drops. */
   authorUsername?: string;
+  tag?: string;
 }
 
+const LISTING_LIMIT = 200;
+
 export async function getFeed(options: FeedOptions): Promise<Post[]> {
-  const { sort, communitySlug, authorUsername } = options;
+  const { sort, communitySlug, authorUsername, tag } = options;
+  const street = communitySlug === DEFAULT_COMMUNITY;
 
   if (!isSupabaseConfigured) {
+    const listed = new Set(
+      mockListings
+        .filter((listing) => listing.community === communitySlug && listing.status === "accepted")
+        .map((listing) => listing.postId),
+    );
     const posts = mockPosts(await demoNow()).filter(
       (post) =>
-        (!communitySlug || post.community.slug === communitySlug) &&
-        (!authorUsername || post.author.username === authorUsername),
+        (!communitySlug || post.community.slug === communitySlug || listed.has(post.id)) &&
+        (!authorUsername || post.author.username === authorUsername) &&
+        (!tag || post.tags.includes(tag)),
     );
-    return sortPosts(posts, sort);
+    return sortPosts(posts, sort, { street });
   }
 
   const supabase = await createSupabaseServerClient();
-  const orderColumn = { hot: "hot_rank", new: "created_at", top: "score" }[sort];
+  const orderColumn = { hot: street ? "street_rank" : "hot_rank", new: "created_at", top: "score" }[sort];
   let query = supabase
     .from("post_feed")
     .select(POST_COLUMNS)
     .order(orderColumn, { ascending: false })
     .limit(FEED_LIMIT);
-  if (communitySlug) query = query.eq("community_slug", communitySlug);
+  if (communitySlug) {
+    const community = await getCommunity(communitySlug);
+    if (!community) return [];
+    const { data: listings, error } = await supabase
+      .from("community_listings")
+      .select("post_id")
+      .eq("community_id", community.id)
+      .eq("status", "accepted")
+      .limit(LISTING_LIMIT);
+    if (error) throw error;
+    const ids = listings.map((listing) => listing.post_id as string);
+    query = ids.length
+      ? query.or(`community_slug.eq.${community.slug},id.in.(${ids.join(",")})`)
+      : query.eq("community_slug", community.slug);
+  }
   if (authorUsername) query = query.eq("author_username", authorUsername);
+  if (tag) query = query.contains("tags", [tag]);
 
   const { data, error } = await query;
   if (error) throw error;
@@ -232,9 +263,8 @@ interface ProfileRow {
   about_me: string | null;
   want_to_meet: string | null;
   banner_path: string | null;
-  accent: string;
-  background: string;
-  font: string;
+  layout: unknown;
+  home_community: { slug: string } | null;
   song_title: string | null;
   song_artist: string | null;
   song_url: string | null;
@@ -244,7 +274,8 @@ interface ProfileRow {
 
 const PROFILE_COLUMNS =
   "id, username, display_name, avatar_url, pronouns, location, mood, status, about_me, want_to_meet, " +
-  "banner_path, accent, background, font, song_title, song_artist, song_url, last_seen_at, created_at";
+  "banner_path, layout, home_community:communities!profiles_home_community_id_fkey(slug), " +
+  "song_title, song_artist, song_url, last_seen_at, created_at";
 
 interface PersonRow {
   username: string;
@@ -256,18 +287,6 @@ const PERSON_COLUMNS = "username, display_name, avatar_url";
 
 function toPerson(row: PersonRow): PersonSummary {
   return { username: row.username, displayName: row.display_name, avatarUrl: row.avatar_url };
-}
-
-function pick<T extends string>(options: readonly T[], value: string, fallback: T): T {
-  return options.find((option) => option === value) ?? fallback;
-}
-
-function toTheme(row: ProfileRow): ProfileTheme {
-  return {
-    accent: pick(ACCENTS, row.accent, DEFAULT_THEME.accent),
-    background: pick(BACKGROUNDS, row.background, DEFAULT_THEME.background),
-    font: pick(FONTS, row.font, DEFAULT_THEME.font),
-  };
 }
 
 export async function getProfile(username: string): Promise<Profile | null> {
@@ -294,6 +313,10 @@ export async function getProfile(username: string): Promise<Profile | null> {
   if (friends.error) throw friends.error;
   if (posts.error) throw posts.error;
 
+  const layout = readLayout(row.layout);
+  const publicUrl = (path: string) => supabase.storage.from("profile-media").getPublicUrl(path).data.publicUrl;
+  const mediaPaths = [...layout.photos, ...(layout.backdrop.photoPath ? [layout.backdrop.photoPath] : [])];
+
   return {
     id: row.id,
     username: row.username,
@@ -305,10 +328,11 @@ export async function getProfile(username: string): Promise<Profile | null> {
     status: row.status,
     aboutMe: row.about_me,
     wantToMeet: row.want_to_meet,
-    bannerUrl: row.banner_path
-      ? supabase.storage.from("profile-media").getPublicUrl(row.banner_path).data.publicUrl
-      : null,
-    theme: toTheme(row),
+    bannerPath: row.banner_path,
+    bannerUrl: row.banner_path ? publicUrl(row.banner_path) : null,
+    layout,
+    mediaUrls: Object.fromEntries(mediaPaths.map((path) => [path, publicUrl(path)])),
+    homeCommunitySlug: row.home_community?.slug ?? null,
     song: row.song_title ? { title: row.song_title, artist: row.song_artist ?? "", url: row.song_url } : null,
     lastSeenAt: row.last_seen_at,
     createdAt: row.created_at,
@@ -404,4 +428,126 @@ export async function getViewerProfile(): Promise<Profile | null> {
   if (!isSupabaseConfigured) return getProfile(DEMO_VIEWER);
   const viewer = await getViewer();
   return viewer ? getProfile(viewer.username) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Tags, claimed tags, suggestions, and discovery
+// ---------------------------------------------------------------------------
+
+const TRENDING_LIMIT = 12;
+
+export async function getTrendingTags(): Promise<TrendingTag[]> {
+  if (!isSupabaseConfigured) {
+    const counts = new Map<string, number>();
+    for (const post of mockPosts(await demoNow())) {
+      for (const tag of post.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+    return [...counts]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, TRENDING_LIMIT)
+      .map(([tag, dropCount]) => ({ tag, dropCount }));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("trending_tags").select("tag, drop_count").limit(TRENDING_LIMIT);
+  if (error) throw error;
+  return (data as { tag: string; drop_count: number }[]).map((row) => ({ tag: row.tag, dropCount: row.drop_count }));
+}
+
+/** Every community with the tags it has claimed (for New drop suggestions and /t pages). */
+export async function listCommunitiesWithTags(): Promise<CommunityWithTags[]> {
+  if (!isSupabaseConfigured) {
+    return mockCommunities.map((community) => ({ ...community, tags: mockClaimedTags[community.slug] ?? [] }));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("communities")
+    .select("id, slug, name, description, community_tags(tag)")
+    .order("name");
+  if (error) throw error;
+  return (data as (Community & { community_tags: { tag: string }[] })[]).map(({ community_tags, ...community }) => ({
+    ...community,
+    tags: community_tags.map((row) => row.tag),
+  }));
+}
+
+export async function getClaimedTags(community: Community): Promise<string[]> {
+  if (!isSupabaseConfigured) return mockClaimedTags[community.slug] ?? [];
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("community_tags").select("tag").eq("community_id", community.id).order("tag");
+  if (error) throw error;
+  return data.map((row) => row.tag as string);
+}
+
+/** Whether the viewer moderates this community (demo: the demo "you" moderates a few). */
+export async function viewerModerates(community: Community): Promise<boolean> {
+  if (!isSupabaseConfigured) return (mockModeratedBy[DEMO_VIEWER] ?? []).includes(community.slug);
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("is_moderator", { target_community: community.id });
+  if (error) throw error;
+  return data === true;
+}
+
+const SUGGESTION_LIMIT = 30;
+
+/** v/thestreets drops with one of this community's claimed tags, not yet accepted or dismissed. */
+export async function getSuggestedPosts(community: Community): Promise<Post[]> {
+  const tags = await getClaimedTags(community);
+  if (tags.length === 0 || community.slug === DEFAULT_COMMUNITY) return [];
+
+  if (!isSupabaseConfigured) {
+    const decided = new Set(mockListings.filter((l) => l.community === community.slug).map((l) => l.postId));
+    return sortPosts(
+      mockPosts(await demoNow()).filter(
+        (post) =>
+          post.community.slug === DEFAULT_COMMUNITY &&
+          !decided.has(post.id) &&
+          post.tags.some((tag) => tags.includes(tag)),
+      ),
+      "new",
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [{ data, error }, decided] = await Promise.all([
+    supabase
+      .from("post_feed")
+      .select(POST_COLUMNS)
+      .eq("community_slug", DEFAULT_COMMUNITY)
+      .overlaps("tags", tags)
+      .order("created_at", { ascending: false })
+      .limit(SUGGESTION_LIMIT),
+    supabase.from("community_listings").select("post_id").eq("community_id", community.id),
+  ]);
+  if (error) throw error;
+  if (decided.error) throw decided.error;
+  const skip = new Set(decided.data.map((row) => row.post_id as string));
+  const rows = (data as PostFeedRow[]).filter((row) => !skip.has(row.id));
+  const votes = await viewerVotes(supabase, "post_votes", rows.map((row) => row.id));
+  return rows.map((row) => toPost(row, votes));
+}
+
+const POPPING_LIMIT = 6;
+
+/** Each community's best drop right now, for the "Popping in v/…" strip on v/thestreets. */
+export async function getPoppingCommunities(): Promise<PoppingCommunity[]> {
+  const posts = await getFeed({ sort: "hot" });
+  const best = new Map<string, Post>();
+  for (const post of posts) {
+    if (post.community.slug !== DEFAULT_COMMUNITY && !best.has(post.community.slug)) best.set(post.community.slug, post);
+  }
+  return [...best.values()].slice(0, POPPING_LIMIT).map((post) => ({
+    community: post.community,
+    post: { id: post.id, title: post.title, score: post.score, commentCount: post.commentCount },
+  }));
+}
+
+/** A drop pinned to someone's space, only if it's theirs and named (not lowkey). */
+export async function getPinnedPost(profile: Pick<Profile, "username" | "layout">): Promise<Post | null> {
+  if (!profile.layout.pinnedPostId) return null;
+  const post = await getPost(profile.layout.pinnedPostId);
+  return post && post.author.username === profile.username ? post : null;
 }

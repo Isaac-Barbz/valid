@@ -3,8 +3,10 @@ import { Bricolage_Grotesque, Fraunces, Inter, Nunito, Space_Mono } from "next/f
 
 import { DemoBanner } from "@/components/demo-banner";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { SideRail } from "@/components/side-rail";
 import { SiteHeader } from "@/components/site-header";
 import { TERMS } from "@/lib/copy";
+import { DEFAULT_LOOK, LOOK_BOOT_SCRIPT } from "@/lib/personal-look";
 
 import "./globals.css";
 
@@ -24,17 +26,19 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Matches the --surface token in globals.css (metadata cannot read CSS variables).
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#16161c" },
-  ],
+  // Dark --surface token from globals.css (dark is the default look; metadata cannot read CSS variables).
+  themeColor: "#131317",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fontVariables} h-full antialiased`}>
-      <body className="flex min-h-full flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] font-sans md:pb-0">
+    // The boot script sets data-theme/density/accent from localStorage before hydration.
+    <html lang="en" className={`${fontVariables} h-full antialiased`} data-theme={DEFAULT_LOOK.theme} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: LOOK_BOOT_SCRIPT }} />
+      </head>
+      <body className="flex min-h-full flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] font-sans md:pb-0 md:pl-rail">
+        <SideRail />
         <DemoBanner />
         <SiteHeader />
         {children}

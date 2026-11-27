@@ -1,140 +1,156 @@
 @import "tailwindcss";
 
 /*
- * Design tokens: Modern Clean. Every color, radius, shadow, and font in the
- * app comes from here. Solid colors only: no gradients anywhere.
- * Light values are the default; dark values follow the OS setting.
+ * Design tokens: Modern Clean, dark first. Every color, radius, shadow, and
+ * font in the app comes from here. Solid colors only: no gradients anywhere.
+ * Each color is light-dark(light, dark). Dark is the default (data-theme="dark"
+ * on <html>); people can pick light or system in Settings.
  */
 :root {
-  --bg: #f6f6f8;
-  --surface: #ffffff;
-  --surface-muted: #f1f1f5;
-  --border: #e5e5ec;
-  --text: #15151a;
-  --text-muted: #5f5f6b;
-  --accent: #6d28d9;
-  --accent-hover: #5b21b6;
-  --accent-soft: #ede9fe;
-  --on-accent: #ffffff;
-  --upvote: #c2410c;
-  --downvote: #4f46e5;
-  --danger: #dc2626;
-  --success: #15803d;
-  --online: #15803d;
-  --warning-soft: #fef3c7;
-  --on-warning-soft: #78350f;
-  --card-shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 14px rgb(20 20 40 / 0.04);
+  color-scheme: light dark;
+
+  /* Dark: deep charcoal on near-black, nighttime-streets mood. */
+  --bg: light-dark(#f6f6f8, #09090c);
+  --surface: light-dark(#ffffff, #131317);
+  --surface-muted: light-dark(#f1f1f5, #1c1c22);
+  --border: light-dark(#e5e5ec, #25252d);
+  --text: light-dark(#15151a, #f1f1f4);
+  --text-muted: light-dark(#5f5f6b, #a3a3b0);
+  --accent: light-dark(#6d28d9, #a78bfa);
+  --accent-hover: light-dark(#5b21b6, #c4b5fd);
+  --accent-soft: light-dark(#ede9fe, #2e1f52);
+  --on-accent: light-dark(#ffffff, #120b24);
+  --upvote: light-dark(#c2410c, #fb923c);
+  --downvote: light-dark(#4f46e5, #818cf8);
+  --danger: light-dark(#dc2626, #f87171);
+  --success: light-dark(#15803d, #4ade80);
+  --online: light-dark(#15803d, #4ade80);
+  --warning-soft: light-dark(#fef3c7, #3a2a0a);
+  --on-warning-soft: light-dark(#78350f, #fcd34d);
+
+  /* Cards: outline, radius, and shadow can be restyled inside a person's space. */
+  --card-outline: var(--border);
+  --card-radius: 1.125rem;
+  --card-shadow: 0 1px 2px light-dark(rgb(20 20 40 / 0.04), rgb(0 0 0 / 0.4)),
+    0 6px 18px light-dark(rgb(20 20 40 / 0.04), rgb(0 0 0 / 0.35));
+
+  /* Desktop left rail width. */
+  --rail-width: 15rem;
+
+  /* Feed density (Settings → Feed density). */
+  --post-pad: 1rem;
+  --feed-gap: 0.75rem;
 
   /*
-   * Profile palette: the solid colors people can pick for their page.
-   * Each accent has a hover shade, a soft tint, and a readable text color.
+   * Accent palette: the personal accent choices (Settings) and default avatar
+   * colors. Each has a hover shade, a soft tint, and a readable text color.
    */
-  --palette-violet: #6d28d9;
-  --palette-violet-strong: #5b21b6;
-  --palette-violet-soft: #ede9fe;
-  --palette-violet-on: #ffffff;
-  --palette-rose: #db2777;
-  --palette-rose-strong: #be185d;
-  --palette-rose-soft: #fce7f3;
-  --palette-rose-on: #ffffff;
-  --palette-red: #dc2626;
-  --palette-red-strong: #b91c1c;
-  --palette-red-soft: #fee2e2;
-  --palette-red-on: #ffffff;
-  --palette-amber: #b45309;
-  --palette-amber-strong: #92400e;
-  --palette-amber-soft: #fef3c7;
-  --palette-amber-on: #ffffff;
-  --palette-green: #15803d;
-  --palette-green-strong: #166534;
-  --palette-green-soft: #dcfce7;
-  --palette-green-on: #ffffff;
-  --palette-teal: #0f766e;
-  --palette-teal-strong: #115e59;
-  --palette-teal-soft: #ccfbf1;
-  --palette-teal-on: #ffffff;
-  --palette-blue: #1d4ed8;
-  --palette-blue-strong: #1e40af;
-  --palette-blue-soft: #dbeafe;
-  --palette-blue-on: #ffffff;
-  --palette-ink: #18181b;
-  --palette-ink-strong: #000000;
-  --palette-ink-soft: #e4e4e7;
-  --palette-ink-on: #ffffff;
-
-  /* Page backgrounds people can pick for their profile. */
-  --page-plain: #f6f6f8;
-  --page-blush: #fdf2f8;
-  --page-mint: #ecfdf5;
-  --page-sky: #eff6ff;
-  --page-butter: #fefce8;
-  --page-lilac: #f5f3ff;
-  --page-stone: #f0efed;
+  --palette-violet: light-dark(#6d28d9, #a78bfa);
+  --palette-violet-strong: light-dark(#5b21b6, #c4b5fd);
+  --palette-violet-soft: light-dark(#ede9fe, #2e1f52);
+  --palette-violet-on: light-dark(#ffffff, #120b24);
+  --palette-rose: light-dark(#db2777, #f472b6);
+  --palette-rose-strong: light-dark(#be185d, #f9a8d4);
+  --palette-rose-soft: light-dark(#fce7f3, #4a1530);
+  --palette-rose-on: light-dark(#ffffff, #1f0612);
+  --palette-red: light-dark(#dc2626, #f87171);
+  --palette-red-strong: light-dark(#b91c1c, #fca5a5);
+  --palette-red-soft: light-dark(#fee2e2, #4a1717);
+  --palette-red-on: light-dark(#ffffff, #1f0606);
+  --palette-amber: light-dark(#b45309, #fbbf24);
+  --palette-amber-strong: light-dark(#92400e, #fcd34d);
+  --palette-amber-soft: light-dark(#fef3c7, #3a2a0a);
+  --palette-amber-on: light-dark(#ffffff, #1a1204);
+  --palette-green: light-dark(#15803d, #4ade80);
+  --palette-green-strong: light-dark(#166534, #86efac);
+  --palette-green-soft: light-dark(#dcfce7, #123a22);
+  --palette-green-on: light-dark(#ffffff, #04140a);
+  --palette-teal: light-dark(#0f766e, #2dd4bf);
+  --palette-teal-strong: light-dark(#115e59, #5eead4);
+  --palette-teal-soft: light-dark(#ccfbf1, #0f3532);
+  --palette-teal-on: light-dark(#ffffff, #031513);
+  --palette-blue: light-dark(#1d4ed8, #60a5fa);
+  --palette-blue-strong: light-dark(#1e40af, #93c5fd);
+  --palette-blue-soft: light-dark(#dbeafe, #172a4f);
+  --palette-blue-on: light-dark(#ffffff, #06101f);
+  --palette-ink: light-dark(#18181b, #f4f4f5);
+  --palette-ink-strong: light-dark(#000000, #ffffff);
+  --palette-ink-soft: light-dark(#e4e4e7, #2a2a32);
+  --palette-ink-on: light-dark(#ffffff, #111114);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0c0c10;
-    --surface: #16161c;
-    --surface-muted: #1f1f27;
-    --border: #2a2a34;
-    --text: #ececf1;
-    --text-muted: #a0a0ae;
-    --accent: #a78bfa;
-    --accent-hover: #c4b5fd;
-    --accent-soft: #2e1f52;
-    --on-accent: #120b24;
-    --upvote: #fb923c;
-    --downvote: #818cf8;
-    --danger: #f87171;
-    --success: #4ade80;
-    --online: #4ade80;
-    --warning-soft: #3a2a0a;
-    --on-warning-soft: #fcd34d;
-    --card-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
-
-    --palette-violet: #a78bfa;
-    --palette-violet-strong: #c4b5fd;
-    --palette-violet-soft: #2e1f52;
-    --palette-violet-on: #120b24;
-    --palette-rose: #f472b6;
-    --palette-rose-strong: #f9a8d4;
-    --palette-rose-soft: #4a1530;
-    --palette-rose-on: #1f0612;
-    --palette-red: #f87171;
-    --palette-red-strong: #fca5a5;
-    --palette-red-soft: #4a1717;
-    --palette-red-on: #1f0606;
-    --palette-amber: #fbbf24;
-    --palette-amber-strong: #fcd34d;
-    --palette-amber-soft: #3a2a0a;
-    --palette-amber-on: #1a1204;
-    --palette-green: #4ade80;
-    --palette-green-strong: #86efac;
-    --palette-green-soft: #123a22;
-    --palette-green-on: #04140a;
-    --palette-teal: #2dd4bf;
-    --palette-teal-strong: #5eead4;
-    --palette-teal-soft: #0f3532;
-    --palette-teal-on: #031513;
-    --palette-blue: #60a5fa;
-    --palette-blue-strong: #93c5fd;
-    --palette-blue-soft: #172a4f;
-    --palette-blue-on: #06101f;
-    --palette-ink: #f4f4f5;
-    --palette-ink-strong: #ffffff;
-    --palette-ink-soft: #2a2a32;
-    --palette-ink-on: #111114;
-
-    --page-plain: #0c0c10;
-    --page-blush: #1a0f15;
-    --page-mint: #0b1612;
-    --page-sky: #0c111c;
-    --page-butter: #17150b;
-    --page-lilac: #120f1c;
-    --page-stone: #131312;
-  }
+/* Settings → Theme */
+:root[data-theme="light"] {
+  color-scheme: light;
 }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Settings → Feed density */
+:root[data-density="compact"] {
+  --post-pad: 0.625rem;
+  --feed-gap: 0.5rem;
+}
+
+/* Settings → Accent */
+:root[data-accent="rose"],
+:root[data-accent="red"],
+:root[data-accent="amber"],
+:root[data-accent="green"],
+:root[data-accent="teal"],
+:root[data-accent="blue"],
+:root[data-accent="ink"] {
+  --accent: var(--personal-accent);
+  --accent-hover: var(--personal-accent-strong);
+  --accent-soft: var(--personal-accent-soft);
+  --on-accent: var(--personal-accent-on);
+}
+:root[data-accent="rose"] {
+  --personal-accent: var(--palette-rose);
+  --personal-accent-strong: var(--palette-rose-strong);
+  --personal-accent-soft: var(--palette-rose-soft);
+  --personal-accent-on: var(--palette-rose-on);
+}
+:root[data-accent="red"] {
+  --personal-accent: var(--palette-red);
+  --personal-accent-strong: var(--palette-red-strong);
+  --personal-accent-soft: var(--palette-red-soft);
+  --personal-accent-on: var(--palette-red-on);
+}
+:root[data-accent="amber"] {
+  --personal-accent: var(--palette-amber);
+  --personal-accent-strong: var(--palette-amber-strong);
+  --personal-accent-soft: var(--palette-amber-soft);
+  --personal-accent-on: var(--palette-amber-on);
+}
+:root[data-accent="green"] {
+  --personal-accent: var(--palette-green);
+  --personal-accent-strong: var(--palette-green-strong);
+  --personal-accent-soft: var(--palette-green-soft);
+  --personal-accent-on: var(--palette-green-on);
+}
+:root[data-accent="teal"] {
+  --personal-accent: var(--palette-teal);
+  --personal-accent-strong: var(--palette-teal-strong);
+  --personal-accent-soft: var(--palette-teal-soft);
+  --personal-accent-on: var(--palette-teal-on);
+}
+:root[data-accent="blue"] {
+  --personal-accent: var(--palette-blue);
+  --personal-accent-strong: var(--palette-blue-strong);
+  --personal-accent-soft: var(--palette-blue-soft);
+  --personal-accent-on: var(--palette-blue-on);
+}
+:root[data-accent="ink"] {
+  --personal-accent: var(--palette-ink);
+  --personal-accent-strong: var(--palette-ink-strong);
+  --personal-accent-soft: var(--palette-ink-soft);
+  --personal-accent-on: var(--palette-ink-on);
+}
+
+/* `compact:` styles apply when Feed density is compact. */
+@custom-variant compact (&:where([data-density="compact"] *));
 
 @theme inline {
   --color-bg: var(--bg);
@@ -154,19 +170,20 @@
   --color-online: var(--online);
   --color-warning-soft: var(--warning-soft);
   --color-on-warning-soft: var(--on-warning-soft);
+  --color-card-outline: var(--card-outline);
 
   --font-sans: var(--font-inter);
   --font-display: var(--font-bricolage);
   --font-profile: var(--profile-font, var(--font-inter));
 
-  --radius-card: 1.125rem;
+  --radius-card: var(--card-radius);
   --radius-control: 0.75rem;
 
   --shadow-card: var(--card-shadow);
-}
 
-html {
-  color-scheme: light dark;
+  --spacing-rail: var(--rail-width);
+  --spacing-post: var(--post-pad);
+  --spacing-feed: var(--feed-gap);
 }
 
 body {

@@ -12,3 +12,6 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKe
 
 export const DEMO_MODE_MESSAGE =
   `Demo mode: connect Supabase to save ${TERMS.post.many}, comments, votes, and profiles.`;
+
+/** The open community every drop can land in, and the default for new drops. */
+export const DEFAULT_COMMUNITY = "thestreets";
