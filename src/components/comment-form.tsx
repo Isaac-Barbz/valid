@@ -8,6 +8,7 @@ import { fieldStyles } from "@/components/ui/field";
 import { FormMessage } from "@/components/ui/form-message";
 import { Switch } from "@/components/ui/switch";
 import type { ActionResult } from "@/lib/types";
+import { TERMS } from "@/lib/copy";
 
 interface CommentFormProps {
   postId: string;
@@ -40,12 +41,12 @@ export function CommentForm({ postId, parentId, onDone, autoFocus }: CommentForm
         required
         maxLength={10000}
         autoFocus={autoFocus}
-        placeholder={parentId ? "Write a reply…" : "Add a comment…"}
-        aria-label={parentId ? "Reply" : "Comment"}
+        placeholder={parentId ? "Write a reply…" : `Add a ${TERMS.comment.one}…`}
+        aria-label={parentId ? TERMS.comment.reply : TERMS.comment.action}
         className={fieldStyles}
       />
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Switch name="anonymous" label="Anonymous" />
+        <Switch name="anonymous" label={TERMS.anonymous.label} />
         <div className="flex gap-2">
           {onDone && (
             <Button variant="ghost" size="sm" onClick={onDone}>
@@ -53,7 +54,7 @@ export function CommentForm({ postId, parentId, onDone, autoFocus }: CommentForm
             </Button>
           )}
           <Button type="submit" size="sm" disabled={isPending}>
-            {isPending ? "Posting…" : parentId ? "Reply" : "Comment"}
+            {isPending ? "Sending…" : parentId ? TERMS.comment.reply : TERMS.comment.action}
           </Button>
         </div>
       </div>

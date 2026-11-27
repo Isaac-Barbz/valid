@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. Every color, radius, and shadow in the app comes from here.
+ * Design tokens: Modern Clean. Every color, radius, shadow, and font in the
+ * app comes from here. Solid colors only: no gradients anywhere.
  * Light values are the default; dark values follow the OS setting.
  */
 :root {
   --bg: #f6f6f8;
   --surface: #ffffff;
-  --surface-muted: #f0f0f4;
-  --border: #e3e3ea;
+  --surface-muted: #f1f1f5;
+  --border: #e5e5ec;
   --text: #15151a;
-  --text-muted: #62626e;
+  --text-muted: #5f5f6b;
   --accent: #6d28d9;
   --accent-hover: #5b21b6;
   --accent-soft: #ede9fe;
   --on-accent: #ffffff;
-  --upvote: #ea580c;
+  --upvote: #c2410c;
   --downvote: #4f46e5;
   --danger: #dc2626;
   --success: #15803d;
+  --online: #15803d;
   --warning-soft: #fef3c7;
   --on-warning-soft: #78350f;
+  --card-shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 14px rgb(20 20 40 / 0.04);
+
+  /*
+   * Profile palette: the solid colors people can pick for their page.
+   * Each accent has a hover shade, a soft tint, and a readable text color.
+   */
+  --palette-violet: #6d28d9;
+  --palette-violet-strong: #5b21b6;
+  --palette-violet-soft: #ede9fe;
+  --palette-violet-on: #ffffff;
+  --palette-rose: #db2777;
+  --palette-rose-strong: #be185d;
+  --palette-rose-soft: #fce7f3;
+  --palette-rose-on: #ffffff;
+  --palette-red: #dc2626;
+  --palette-red-strong: #b91c1c;
+  --palette-red-soft: #fee2e2;
+  --palette-red-on: #ffffff;
+  --palette-amber: #b45309;
+  --palette-amber-strong: #92400e;
+  --palette-amber-soft: #fef3c7;
+  --palette-amber-on: #ffffff;
+  --palette-green: #15803d;
+  --palette-green-strong: #166534;
+  --palette-green-soft: #dcfce7;
+  --palette-green-on: #ffffff;
+  --palette-teal: #0f766e;
+  --palette-teal-strong: #115e59;
+  --palette-teal-soft: #ccfbf1;
+  --palette-teal-on: #ffffff;
+  --palette-blue: #1d4ed8;
+  --palette-blue-strong: #1e40af;
+  --palette-blue-soft: #dbeafe;
+  --palette-blue-on: #ffffff;
+  --palette-ink: #18181b;
+  --palette-ink-strong: #000000;
+  --palette-ink-soft: #e4e4e7;
+  --palette-ink-on: #ffffff;
+
+  /* Page backgrounds people can pick for their profile. */
+  --page-plain: #f6f6f8;
+  --page-blush: #fdf2f8;
+  --page-mint: #ecfdf5;
+  --page-sky: #eff6ff;
+  --page-butter: #fefce8;
+  --page-lilac: #f5f3ff;
+  --page-stone: #f0efed;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,7 +79,7 @@
     --surface-muted: #1f1f27;
     --border: #2a2a34;
     --text: #ececf1;
-    --text-muted: #9a9aa8;
+    --text-muted: #a0a0ae;
     --accent: #a78bfa;
     --accent-hover: #c4b5fd;
     --accent-soft: #2e1f52;
@@ -39,8 +88,51 @@
     --downvote: #818cf8;
     --danger: #f87171;
     --success: #4ade80;
+    --online: #4ade80;
     --warning-soft: #3a2a0a;
     --on-warning-soft: #fcd34d;
+    --card-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+
+    --palette-violet: #a78bfa;
+    --palette-violet-strong: #c4b5fd;
+    --palette-violet-soft: #2e1f52;
+    --palette-violet-on: #120b24;
+    --palette-rose: #f472b6;
+    --palette-rose-strong: #f9a8d4;
+    --palette-rose-soft: #4a1530;
+    --palette-rose-on: #1f0612;
+    --palette-red: #f87171;
+    --palette-red-strong: #fca5a5;
+    --palette-red-soft: #4a1717;
+    --palette-red-on: #1f0606;
+    --palette-amber: #fbbf24;
+    --palette-amber-strong: #fcd34d;
+    --palette-amber-soft: #3a2a0a;
+    --palette-amber-on: #1a1204;
+    --palette-green: #4ade80;
+    --palette-green-strong: #86efac;
+    --palette-green-soft: #123a22;
+    --palette-green-on: #04140a;
+    --palette-teal: #2dd4bf;
+    --palette-teal-strong: #5eead4;
+    --palette-teal-soft: #0f3532;
+    --palette-teal-on: #031513;
+    --palette-blue: #60a5fa;
+    --palette-blue-strong: #93c5fd;
+    --palette-blue-soft: #172a4f;
+    --palette-blue-on: #06101f;
+    --palette-ink: #f4f4f5;
+    --palette-ink-strong: #ffffff;
+    --palette-ink-soft: #2a2a32;
+    --palette-ink-on: #111114;
+
+    --page-plain: #0c0c10;
+    --page-blush: #1a0f15;
+    --page-mint: #0b1612;
+    --page-sky: #0c111c;
+    --page-butter: #17150b;
+    --page-lilac: #120f1c;
+    --page-stone: #131312;
   }
 }
 
@@ -59,14 +151,18 @@
   --color-downvote: var(--downvote);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-online: var(--online);
   --color-warning-soft: var(--warning-soft);
   --color-on-warning-soft: var(--on-warning-soft);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-bricolage);
+  --font-profile: var(--profile-font, var(--font-inter));
 
-  --radius-card: 1rem;
-  --radius-control: 0.625rem;
+  --radius-card: 1.125rem;
+  --radius-control: 0.75rem;
+
+  --shadow-card: var(--card-shadow);
 }
 
 html {

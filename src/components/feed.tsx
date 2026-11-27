@@ -5,17 +5,24 @@ import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getFeed } from "@/lib/data";
 import type { SortMode } from "@/lib/types";
+import { TERMS } from "@/lib/copy";
 
-export async function Feed({ sort, communitySlug }: { sort: SortMode; communitySlug?: string }) {
-  const posts = await getFeed({ sort, communitySlug });
+interface FeedProps {
+  sort: SortMode;
+  communitySlug?: string;
+  authorUsername?: string;
+}
+
+export async function Feed({ sort, communitySlug, authorUsername }: FeedProps) {
+  const posts = await getFeed({ sort, communitySlug, authorUsername });
 
   if (posts.length === 0) {
     return (
       <Card className="flex flex-col items-center gap-3 p-10 text-center">
-        <p className="font-semibold">No posts yet</p>
+        <p className="font-semibold">No {TERMS.post.many} yet</p>
         <p className="text-sm text-text-muted">Be the first to start the conversation.</p>
         <Link href={communitySlug ? `/submit?c=${communitySlug}` : "/submit"} className={buttonStyles()}>
-          Create a post
+          {TERMS.post.create}
         </Link>
       </Card>
     );

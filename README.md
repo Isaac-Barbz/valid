@@ -49,7 +49,8 @@ user may read and write. Never add the `service_role`/secret key to this app.
 ## Supabase setup (free plan)
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. In the SQL editor, run `supabase/migrations/20261126000000_foundation.sql`,
+2. In the SQL editor, run the files in `supabase/migrations/` in order
+   (`20261126000000_foundation.sql`, then `20261127000000_profiles.sql`),
    then `supabase/seed.sql` for the starter communities. (Or with the Supabase
    CLI: `supabase link` then `supabase db push`.)
 3. Auth → URL Configuration: set the Site URL to the Vercel URL and add
@@ -59,7 +60,8 @@ user may read and write. Never add the `service_role`/secret key to this app.
    a Google Cloud OAuth client).
 5. Set the two environment variables above.
 
-Free-plan notes: the built-in email sender is rate-limited (a few emails per
+Free-plan notes: Supabase Storage's free plan includes 1 GB, plenty for
+WebP banners at a few hundred KB each. The built-in email sender is rate-limited (a few emails per
 hour), which is fine for testing; free projects pause after a week without
 activity and can be resumed from the dashboard.
 
@@ -77,6 +79,13 @@ and reports, all with Row Level Security.
   `remove_content()` to take it down.
 - Scores and comment counts are kept in sync by triggers; users cannot write
   them.
+- Profiles carry the MySpace-style fields (mood, status, blurbs, song, solid
+  color/background/font ids, banner path). `friendships` holds requests and
+  accepted friends (one row per pair), `top_friends` the ordered Top 8 (only
+  accepted friends), and `profile_comments` each person's wall (the owner and
+  their friends can write). Banners live in the public `profile-media`
+  storage bucket under each user's own folder (2 MB max, resized to WebP in
+  the browser first). `touch_last_seen()` powers "Online now".
 
 ## Scripts
 

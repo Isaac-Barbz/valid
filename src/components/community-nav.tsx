@@ -1,6 +1,7 @@
 import { NavLink } from "@/components/nav-link";
 import { Card } from "@/components/ui/card";
 import { listCommunities } from "@/lib/data";
+import { capitalize, TERMS } from "@/lib/copy";
 
 /** Communities as a scrolling chip row on mobile and a sidebar list on desktop. */
 export async function CommunityNav() {
@@ -8,7 +9,7 @@ export async function CommunityNav() {
 
   return (
     <>
-      <nav aria-label="Communities" className="-mx-4 overflow-x-auto px-4 lg:hidden">
+      <nav aria-label={capitalize(TERMS.community.many)} className="-mx-4 overflow-x-auto px-4 lg:hidden">
         <ul className="flex w-max gap-2 pb-1">
           {communities.map((community) => (
             <li key={community.id}>
@@ -26,8 +27,10 @@ export async function CommunityNav() {
       </nav>
 
       <Card className="hidden p-4 lg:block">
-        <h2 className="mb-3 text-xs font-semibold tracking-wide text-text-muted uppercase">Communities</h2>
-        <nav aria-label="Communities">
+        <h2 className="mb-3 text-xs font-semibold tracking-wide text-text-muted uppercase">
+          {capitalize(TERMS.community.many)}
+        </h2>
+        <nav aria-label={capitalize(TERMS.community.many)}>
           <ul className="flex flex-col gap-0.5">
             {communities.map((community) => (
               <li key={community.id}>
@@ -37,7 +40,8 @@ export async function CommunityNav() {
                   activeClassName="bg-accent-soft font-medium text-accent"
                   inactiveClassName="text-text hover:bg-surface-muted"
                 >
-                  c/{community.slug}
+                  {TERMS.community.prefix}
+                  {community.slug}
                 </NavLink>
               </li>
             ))}

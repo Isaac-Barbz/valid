@@ -3,7 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { isSupabaseConfigured, supabasePublishableKey, supabaseUrl } from "@/lib/config";
 
-/** Keeps the Supabase auth session fresh on every page request. */
+/** How often a signed-in visit refreshes "last seen" (drives "Online now"). */
+const PRESENCE_COOKIE = "valid_seen";
+const PRESENCE_SECONDS = 5 * 60;
+
+/** Keeps the Supabase auth session fresh and stamps presence at most every few minutes. */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (!isSupabaseConfigured) return response;
@@ -24,7 +28,11 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  if (data?.claims.sub && !request.cookies.has(PRESENCE_COOKIE)) {
+    await supabase.rpc("touch_last_seen");
+    response.cookies.set(PRESENCE_COOKIE, "1", { maxAge: PRESENCE_SECONDS, httpOnly: true, sameSite: "lax" });
+  }
   return response;
 }
 
