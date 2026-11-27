@@ -57,6 +57,68 @@ export const PlusIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const HomeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z" />
+  </Icon>
+);
+
+export const UserIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </Icon>
+);
+
+export const UserPlusIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="10" cy="8" r="4" />
+    <path d="M2 21a8 8 0 0 1 13-6.2M19 14v6M16 17h6" />
+  </Icon>
+);
+
+export const CheckIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 12.5l4.5 4.5L19 7" />
+  </Icon>
+);
+
+export const MailIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m3 7 9 6 9-6" />
+  </Icon>
+);
+
+export const MusicIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9 18V5l11-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="17" cy="16" r="3" />
+  </Icon>
+);
+
+export const PlayIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M7 4.5v15l13-7.5Z" fill="currentColor" />
+  </Icon>
+);
+
+export const PauseIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M8 5v14M16 5v14" strokeWidth={3} />
+  </Icon>
+);
+
+export const PaletteIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.9 1.4-1.8-.4-1.2.4-2.2 1.6-2.2H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10Z" />
+    <circle cx="7.5" cy="11" r="1" fill="currentColor" />
+    <circle cx="10.5" cy="7.5" r="1" fill="currentColor" />
+    <circle cx="15" cy="8" r="1" fill="currentColor" />
+  </Icon>
+);
+
 export const CheckBadgeIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M12 2l2.4 1.8 3-.2.9 2.9 2.5 1.7-1 2.8 1 2.8-2.5 1.7-.9 2.9-3-.2L12 22l-2.4-1.8-3 .2-.9-2.9-2.5-1.7 1-2.8-1-2.8 2.5-1.7.9-2.9 3 .2Z" />

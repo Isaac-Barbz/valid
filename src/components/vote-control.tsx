@@ -8,6 +8,7 @@ import { ArrowDownIcon, ArrowUpIcon } from "@/components/icons";
 import { isSupabaseConfigured } from "@/lib/config";
 import { compactNumber } from "@/lib/format";
 import type { VoteValue } from "@/lib/types";
+import { TERMS } from "@/lib/copy";
 
 interface VoteControlProps {
   target: "post" | "comment";
@@ -49,24 +50,25 @@ export function VoteControl({ target, id, score, viewerVote, layout = "column" }
         type="button"
         onClick={() => choose(1)}
         disabled={isPending}
-        aria-label="Upvote"
+        aria-label={TERMS.vote.up}
         aria-pressed={vote === 1}
         className={`${arrow} ${vote === 1 ? "text-upvote" : "text-text-muted hover:text-upvote"}`}
       >
         <ArrowUpIcon className="size-4" />
       </button>
       <span
-        className={`min-w-8 text-center text-sm font-semibold tabular-nums ${
-          vote === 1 ? "text-upvote" : vote === -1 ? "text-downvote" : "text-text"
-        }`}
+        className={`flex min-w-8 items-baseline justify-center gap-1 text-sm font-semibold tabular-nums ${
+          layout === "column" ? "flex-col items-center gap-0 leading-tight" : ""
+        } ${vote === 1 ? "text-upvote" : vote === -1 ? "text-downvote" : "text-text"}`}
       >
         {compactNumber(shownScore)}
+        <span className="text-[0.6875rem] font-medium text-text-muted">{TERMS.vote.score}</span>
       </span>
       <button
         type="button"
         onClick={() => choose(-1)}
         disabled={isPending}
-        aria-label="Downvote"
+        aria-label={TERMS.vote.down}
         aria-pressed={vote === -1}
         className={`${arrow} ${vote === -1 ? "text-downvote" : "text-text-muted hover:text-downvote"}`}
       >

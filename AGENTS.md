@@ -42,6 +42,35 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Keep `hot_rank()` in SQL and `hotRank()` in `src/lib/ranking.ts` in sync.
 - The app must keep working in demo mode (no Supabase env vars).
 
+## Design: Modern Clean
+
+- Solid colors only. **No gradients anywhere** (no `bg-gradient-*`,
+  `linear-gradient`, `radial-gradient`, `conic-gradient`, gradient text, or
+  gradient banners/avatars). Banners are an uploaded image or a solid color.
+- Clean typography: Inter for text, Bricolage Grotesque (`font-display`) for
+  the wordmark and big headings. Real contrast (WCAG AA); depth comes from
+  1px borders and the subtle `shadow-card` token only.
+- Profile customization (the MySpace part) is user-chosen but curated: solid
+  accent and page colors from the `--palette-*` / `--page-*` tokens, a font
+  from `FONTS`, a banner image, a song. No glitter or preset gradients. Ids
+  live in `src/lib/profile-theme.ts` and must match the SQL check constraints.
+
+## Vocabulary
+
+All user-facing names for core concepts come from `TERMS` in
+`src/lib/copy.ts`; never hard-code them in components.
+
+| Concept | Term on the site |
+| --- | --- |
+| Post | **Drop** ("New drop", "Drop it", "12 drops") |
+| Upvote | **Valid** ("12 valid"); downvote stays plain ("Downvote") |
+| Anonymous post | **Lowkey** (toggle "Post lowkey", badge "Lowkey") |
+| Profile | **Your space** in navigation; others' read "Jasmine's space" |
+| Everything else | Plain words: comment, community, friends, feed, trending, mood |
+
+Code, routes, and the database keep the plain names (`posts`, `votes`,
+`is_anonymous`, `/u/…`).
+
 ## Code standards
 
 - TypeScript strict. No `any`, no `@ts-ignore`, no disabled lint rules without a

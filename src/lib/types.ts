@@ -1,3 +1,5 @@
+import type { ProfileTheme } from "@/lib/profile-theme";
+
 export type SortMode = "hot" | "new" | "top";
 
 export const SORT_MODES: readonly SortMode[] = ["hot", "new", "top"];
@@ -48,6 +50,47 @@ export interface CommentNode extends Comment {
 export interface Viewer {
   id: string;
   username: string;
+}
+
+/** Just enough of a person to show an avatar and a link to their page. */
+export interface PersonSummary {
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+export interface ProfileSong {
+  title: string;
+  artist: string;
+  /** Direct https link to an audio file; `null` shows the song without a player. */
+  url: string | null;
+}
+
+export interface Profile extends PersonSummary {
+  id: string;
+  pronouns: string | null;
+  location: string | null;
+  mood: string | null;
+  status: string | null;
+  aboutMe: string | null;
+  wantToMeet: string | null;
+  bannerUrl: string | null;
+  theme: ProfileTheme;
+  song: ProfileSong | null;
+  lastSeenAt: string | null;
+  createdAt: string;
+  friendCount: number;
+  postCount: number;
+}
+
+/** How the signed-in viewer relates to a profile. */
+export type Friendship = "self" | "none" | "outgoing" | "incoming" | "friends";
+
+export interface ProfileComment {
+  id: string;
+  author: PersonSummary;
+  body: string;
+  createdAt: string;
 }
 
 export const REPORT_REASONS = [

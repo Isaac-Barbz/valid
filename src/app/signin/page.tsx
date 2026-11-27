@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { CheckBadgeIcon } from "@/components/icons";
 import { SignInForm } from "@/components/sign-in-form";
 import { Card } from "@/components/ui/card";
+import { TERMS } from "@/lib/copy";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -14,7 +15,7 @@ export default function SignInPage() {
           <CheckBadgeIcon className="size-10 text-accent" />
           <h1 className="text-xl font-bold">Sign in to Valid</h1>
           <p className="text-sm text-text-muted">
-            One account. Post as yourself or anonymously, your call every time.
+            One account. Share as yourself or {TERMS.anonymous.label.toLowerCase()}, your call every time.
           </p>
         </div>
         <SignInForm />

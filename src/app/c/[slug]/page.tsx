@@ -9,6 +9,7 @@ import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCommunity } from "@/lib/data";
 import { parseSort } from "@/lib/ranking";
+import { TERMS } from "@/lib/copy";
 
 type Props = PageProps<"/c/[slug]">;
 
@@ -22,13 +23,14 @@ async function CommunityContent({ params, searchParams }: Props) {
     <>
       <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold">{community.name}</h1>
+          <h1 className="font-display text-2xl font-bold">{community.name}</h1>
           <p className="text-sm text-text-muted">
-            c/{community.slug} · {community.description}
+            {TERMS.community.prefix}
+            {community.slug} · {community.description}
           </p>
         </div>
         <Link href={`/submit?c=${community.slug}`} className={buttonStyles("primary", "sm")}>
-          Post here
+          {TERMS.post.create}
         </Link>
       </Card>
       <SortTabs basePath={`/c/${community.slug}`} active={sort} />

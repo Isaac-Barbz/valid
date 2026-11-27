@@ -21,3 +21,10 @@ export function timeAgo(iso: string, now: number = Date.now()): string {
 export function compactNumber(value: number): string {
   return compact.format(value);
 }
+
+/** Seen within the last few minutes counts as "online now". */
+const ONLINE_WINDOW_MS = 10 * 60 * 1000;
+
+export function isOnline(lastSeenAt: string | null, now: number = Date.now()): boolean {
+  return lastSeenAt !== null && now - new Date(lastSeenAt).getTime() < ONLINE_WINDOW_MS;
+}

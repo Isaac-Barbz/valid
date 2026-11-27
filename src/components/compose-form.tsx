@@ -9,6 +9,7 @@ import { fieldStyles } from "@/components/ui/field";
 import { FormMessage } from "@/components/ui/form-message";
 import { Switch } from "@/components/ui/switch";
 import type { Community } from "@/lib/types";
+import { capitalize, TERMS } from "@/lib/copy";
 
 interface ComposeFormProps {
   communities: Pick<Community, "slug" | "name">[];
@@ -21,14 +22,15 @@ export function ComposeForm({ communities, defaultCommunity }: ComposeFormProps)
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Community</span>
+        <span className="text-sm font-medium">{capitalize(TERMS.community.one)}</span>
         <select name="community" required defaultValue={defaultCommunity ?? ""} className={fieldStyles}>
           <option value="" disabled>
-            Choose a community
+            Choose a {TERMS.community.one}
           </option>
           {communities.map((community) => (
             <option key={community.slug} value={community.slug}>
-              c/{community.slug} · {community.name}
+              {TERMS.community.prefix}
+              {community.slug} · {community.name}
             </option>
           ))}
         </select>
@@ -49,15 +51,15 @@ export function ComposeForm({ communities, defaultCommunity }: ComposeFormProps)
           label={
             <span className="inline-flex items-center gap-1.5">
               <MaskIcon className="size-4" />
-              Post anonymously
+              {TERMS.anonymous.toggle}
             </span>
           }
-          description="Shows as “Anonymous” to everyone. Moderators can still act on it."
+          description={`Shows as “${TERMS.anonymous.label}” to everyone. Moderators can still act on it.`}
         />
       </div>
       <FormMessage state={state} />
       <Button type="submit" disabled={isPending} className="self-end">
-        {isPending ? "Posting…" : "Post"}
+        {isPending ? TERMS.post.pending : TERMS.post.action}
       </Button>
     </form>
   );

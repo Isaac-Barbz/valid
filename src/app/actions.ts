@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { DEMO_MODE_MESSAGE, isSupabaseConfigured } from "@/lib/config";
+import { TERMS } from "@/lib/copy";
+import { ACCENTS, BACKGROUNDS, FONTS } from "@/lib/profile-theme";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { REPORT_REASONS, type ActionResult } from "@/lib/types";
 
@@ -29,9 +31,9 @@ async function signedInClient() {
 // ---------------------------------------------------------------------------
 
 const postSchema = z.object({
-  community: z.string().min(1, "Pick a community."),
+  community: z.string().min(1, `Pick a ${TERMS.community.one}.`),
   title: z.string().trim().min(1, "Add a title.").max(300, "Keep the title under 300 characters."),
-  body: z.string().trim().max(40000, "That post is too long."),
+  body: z.string().trim().max(40000, `That ${TERMS.post.one} is too long.`),
   anonymous: checkbox,
 });
 
@@ -49,7 +51,7 @@ export async function createPost(_prev: ActionResult | null, formData: FormData)
     .select("id")
     .eq("slug", parsed.data.community)
     .maybeSingle();
-  if (!community) return { ok: false, error: "That community doesn't exist." };
+  if (!community) return { ok: false, error: `That ${TERMS.community.one} doesn't exist.` };
 
   const id = crypto.randomUUID();
   const { error } = await supabase.from("posts").insert({
@@ -60,7 +62,7 @@ export async function createPost(_prev: ActionResult | null, formData: FormData)
     body: parsed.data.body,
     is_anonymous: parsed.data.anonymous,
   });
-  if (error) return { ok: false, error: "Couldn't publish your post. Try again." };
+  if (error) return { ok: false, error: `Couldn't publish your ${TERMS.post.one}. Try again.` };
 
   redirect(`/p/${id}`);
 }
@@ -150,6 +152,161 @@ export async function submitReport(_prev: ActionResult | null, formData: FormDat
     details,
   });
   if (error) return { ok: false, error: "Couldn't send your report. Try again." };
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Profiles, friends, and walls
+// ---------------------------------------------------------------------------
+
+/** Empty form fields clear the column. */
+const optionalText = (max: number, label: string) =>
+  z
+    .string()
+    .trim()
+    .max(max, `Keep ${label} under ${max} characters.`)
+    .transform((value) => value || null);
+
+const BANNER_MAX_BYTES = 2 * 1024 * 1024;
+
+const profileSchema = z.object({
+  accent: z.enum(ACCENTS),
+  background: z.enum(BACKGROUNDS),
+  font: z.enum(FONTS),
+  mood: optionalText(40, "your mood"),
+  status: optionalText(140, "your status"),
+  aboutMe: optionalText(2000, "“About me”"),
+  wantToMeet: optionalText(1000, "“Who I'd like to meet”"),
+  songTitle: optionalText(80, "the song title"),
+  songArtist: optionalText(80, "the artist"),
+  songUrl: z
+    .string()
+    .trim()
+    .max(500, "That song link is too long.")
+    .refine((value) => value === "" || value.startsWith("https://"), "Song links must start with https://")
+    .transform((value) => value || null),
+  banner: z
+    .instanceof(File)
+    .optional()
+    .refine((file) => !file || file.size <= BANNER_MAX_BYTES, "Banner images must be under 2 MB.")
+    .refine(
+      (file) => !file || file.size === 0 || file.type.startsWith("image/"),
+      "Banners must be an image.",
+    ),
+  removeBanner: checkbox,
+});
+
+export async function updateProfile(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  const parsed = profileSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return firstIssue(parsed.error);
+  if (!isSupabaseConfigured) return { ok: false, error: DEMO_MODE_MESSAGE };
+
+  const session = await signedInClient();
+  if (!session) return { ok: false, error: SIGN_IN_REQUIRED, needsSignIn: true };
+  const { supabase, userId } = session;
+  const { banner, removeBanner, ...fields } = parsed.data;
+
+  const { data: current } = await supabase.from("profiles").select("banner_path").eq("id", userId).single();
+  const oldBanner = (current?.banner_path as string | null | undefined) ?? null;
+  let bannerPath = removeBanner ? null : oldBanner;
+
+  if (banner && banner.size > 0) {
+    bannerPath = `${userId}/banner-${Date.now()}.webp`;
+    const { error } = await supabase.storage
+      .from("profile-media")
+      .upload(bannerPath, banner, { contentType: banner.type, cacheControl: "31536000" });
+    if (error) return { ok: false, error: "Couldn't upload your banner. Try a smaller image." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      accent: fields.accent,
+      background: fields.background,
+      font: fields.font,
+      mood: fields.mood,
+      status: fields.status,
+      about_me: fields.aboutMe,
+      want_to_meet: fields.wantToMeet,
+      song_title: fields.songTitle,
+      song_artist: fields.songArtist,
+      song_url: fields.songTitle ? fields.songUrl : null,
+      banner_path: bannerPath,
+    })
+    .eq("id", userId);
+  if (error) return { ok: false, error: "Couldn't save your page. Try again." };
+
+  if (oldBanner && oldBanner !== bannerPath) {
+    await supabase.storage.from("profile-media").remove([oldBanner]);
+  }
+
+  refresh();
+  return { ok: true };
+}
+
+const friendSchema = z.object({
+  username: z.string().min(1),
+  action: z.enum(["request", "accept", "remove"]),
+});
+
+export async function changeFriendship(input: z.input<typeof friendSchema>): Promise<ActionResult> {
+  const parsed = friendSchema.safeParse(input);
+  if (!parsed.success) return firstIssue(parsed.error);
+  if (!isSupabaseConfigured) return { ok: false, error: DEMO_MODE_MESSAGE };
+
+  const session = await signedInClient();
+  if (!session) return { ok: false, error: SIGN_IN_REQUIRED, needsSignIn: true };
+  const { supabase, userId } = session;
+
+  const { data: other } = await supabase.from("profiles").select("id").eq("username", parsed.data.username).maybeSingle();
+  if (!other || other.id === userId) return { ok: false, error: "That person doesn't exist." };
+  const otherId = other.id as string;
+
+  const { error } =
+    parsed.data.action === "request"
+      ? await supabase.from("friendships").insert({ requester_id: userId, addressee_id: otherId })
+      : parsed.data.action === "accept"
+        ? await supabase
+            .from("friendships")
+            .update({ status: "accepted" })
+            .eq("requester_id", otherId)
+            .eq("addressee_id", userId)
+        : await supabase
+            .from("friendships")
+            .delete()
+            .or(
+              `and(requester_id.eq.${userId},addressee_id.eq.${otherId}),` +
+                `and(requester_id.eq.${otherId},addressee_id.eq.${userId})`,
+            );
+  if (error) return { ok: false, error: "Couldn't update that friendship. Try again." };
+
+  refresh();
+  return { ok: true };
+}
+
+const wallSchema = z.object({
+  username: z.string().min(1),
+  body: z.string().trim().min(1, "Write something first.").max(1000, "Keep it under 1000 characters."),
+});
+
+export async function addWallComment(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  const parsed = wallSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return firstIssue(parsed.error);
+  if (!isSupabaseConfigured) return { ok: false, error: DEMO_MODE_MESSAGE };
+
+  const session = await signedInClient();
+  if (!session) return { ok: false, error: SIGN_IN_REQUIRED, needsSignIn: true };
+  const { supabase, userId } = session;
+
+  const { data: profile } = await supabase.from("profiles").select("id").eq("username", parsed.data.username).maybeSingle();
+  if (!profile) return { ok: false, error: "That person doesn't exist." };
+
+  const { error } = await supabase
+    .from("profile_comments")
+    .insert({ profile_id: profile.id, author_id: userId, body: parsed.data.body });
+  if (error) return { ok: false, error: `Only ${TERMS.friend.many} can write on this ${TERMS.profile.wall.toLowerCase()}.` };
+
+  refresh();
   return { ok: true };
 }
 

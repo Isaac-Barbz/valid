@@ -1,3 +1,5 @@
+import { TERMS } from "@/lib/copy";
+
 /**
  * Supabase settings. Both are public by design (the publishable key only
  * grants what Row Level Security allows). When either is missing the app runs
@@ -9,4 +11,4 @@ export const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHAB
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 
 export const DEMO_MODE_MESSAGE =
-  "Demo mode: connect Supabase to save posts, comments, votes, and reports.";
+  `Demo mode: connect Supabase to save ${TERMS.post.many}, comments, votes, and profiles.`;

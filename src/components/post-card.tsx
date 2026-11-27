@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { VoteControl } from "@/components/vote-control";
 import { compactNumber, timeAgo } from "@/lib/format";
 import type { Post } from "@/lib/types";
+import { TERMS, termFor } from "@/lib/copy";
 
 interface PostCardProps {
   post: Post;
@@ -24,7 +25,8 @@ export function PostCard({ post, expanded = false }: PostCardProps) {
       <article className="flex min-w-0 flex-1 flex-col gap-1.5">
         <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-text-muted">
           <Link href={`/c/${post.community.slug}`} className="font-semibold text-text hover:text-accent">
-            c/{post.community.slug}
+            {TERMS.community.prefix}
+            {post.community.slug}
           </Link>
           <span aria-hidden>·</span>
           <AuthorLabel author={post.author} />
@@ -50,7 +52,7 @@ export function PostCard({ post, expanded = false }: PostCardProps) {
         <div className="-ml-3 flex items-center gap-1 pt-1">
           <Link href={href} className={buttonStyles("ghost", "sm")}>
             <CommentIcon className="size-4" />
-            {compactNumber(post.commentCount)} {post.commentCount === 1 ? "comment" : "comments"}
+            {compactNumber(post.commentCount)} {termFor(post.commentCount, TERMS.comment)}
           </Link>
           <ReportButton target="post" id={post.id} />
         </div>
