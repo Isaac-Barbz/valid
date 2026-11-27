@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens. Every color, radius, and shadow in the app comes from here.
+ * Light values are the default; dark values follow the OS setting.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #f6f6f8;
+  --surface: #ffffff;
+  --surface-muted: #f0f0f4;
+  --border: #e3e3ea;
+  --text: #15151a;
+  --text-muted: #62626e;
+  --accent: #6d28d9;
+  --accent-hover: #5b21b6;
+  --accent-soft: #ede9fe;
+  --on-accent: #ffffff;
+  --upvote: #ea580c;
+  --downvote: #4f46e5;
+  --danger: #dc2626;
+  --success: #15803d;
+  --warning-soft: #fef3c7;
+  --on-warning-soft: #78350f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0c0c10;
+    --surface: #16161c;
+    --surface-muted: #1f1f27;
+    --border: #2a2a34;
+    --text: #ececf1;
+    --text-muted: #9a9aa8;
+    --accent: #a78bfa;
+    --accent-hover: #c4b5fd;
+    --accent-soft: #2e1f52;
+    --on-accent: #120b24;
+    --upvote: #fb923c;
+    --downvote: #818cf8;
+    --danger: #f87171;
+    --success: #4ade80;
+    --warning-soft: #3a2a0a;
+    --on-warning-soft: #fcd34d;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-upvote: var(--upvote);
+  --color-downvote: var(--downvote);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning-soft: var(--warning-soft);
+  --color-on-warning-soft: var(--on-warning-soft);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+}
+
+html {
+  color-scheme: light dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }

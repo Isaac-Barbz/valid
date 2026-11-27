@@ -20,6 +20,28 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (Lighthouse when possible), in the PR description.
 - Add a short entry to `BUILD_LOG.md` in the same PR.
 
+## Budget: $0 (free tiers only)
+
+- Stay on free tiers: GitHub Free, Vercel Hobby, Supabase Free. No paid
+  services, paid add-ons, or custom domain without the owner's explicit OK.
+- Images: Supabase Storage, resized and compressed in the browser before
+  upload (e.g. canvas → WebP, max ~1600px). Do not use paid image/video APIs
+  or Vercel image optimization quotas for user uploads (`unoptimized` for
+  user content).
+- Video: not until a free approach is agreed.
+- Keep requests cheap: paginate, select only needed columns, prefer static
+  shells + streaming, no polling loops (use Supabase Realtime sparingly).
+- Note any new free-tier limit you rely on in the README.
+
+## Data and privacy rules
+
+- Never read `posts`/`comments` base tables from the app; use the
+  `post_feed`/`comment_feed` views so anonymous authors stay hidden.
+- Every schema change is a new file in `supabase/migrations/` with RLS
+  policies; never edit an applied migration.
+- Keep `hot_rank()` in SQL and `hotRank()` in `src/lib/ranking.ts` in sync.
+- The app must keep working in demo mode (no Supabase env vars).
+
 ## Code standards
 
 - TypeScript strict. No `any`, no `@ts-ignore`, no disabled lint rules without a

@@ -1,7 +1,27 @@
-export default function Home() {
+import { Suspense } from "react";
+
+import { Feed, FeedSkeleton } from "@/components/feed";
+import { FeedLayout } from "@/components/feed-layout";
+import { SortTabs } from "@/components/sort-tabs";
+import { parseSort } from "@/lib/ranking";
+
+async function HomeFeed({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
+  const sort = parseSort((await searchParams).sort);
   return (
-    <main className="flex flex-1 items-center justify-center p-8">
-      <h1 className="text-3xl font-semibold tracking-tight">Valid</h1>
-    </main>
+    <>
+      <SortTabs basePath="/" active={sort} />
+      <Feed sort={sort} />
+    </>
+  );
+}
+
+export default function HomePage({ searchParams }: PageProps<"/">) {
+  return (
+    <FeedLayout>
+      <h1 className="sr-only">Home feed</h1>
+      <Suspense fallback={<FeedSkeleton />}>
+        <HomeFeed searchParams={searchParams} />
+      </Suspense>
+    </FeedLayout>
   );
 }
