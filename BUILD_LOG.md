@@ -2,6 +2,47 @@
 
 Newest first. One short entry per PR.
 
+## 2026-11-26 · v/thestreets, tags, and customizable spaces (feat/streets-and-customize)
+
+- Communities are now `v/` (`/v/[slug]`; old `/c/…` links redirect).
+  **v/thestreets** is the default open community; New drop starts there, or
+  in your home community (Settings).
+- Tags: `#tags` from the body and a tag field (max 10), chips on drops,
+  `/t/[tag]` pages with "Communities that talk about #tag", trending tags.
+- Communities claim tags (moderators only). v/thestreets drops with a claimed
+  tag land in that community's **Suggested** queue; mods accept (cross-list)
+  or dismiss. New drop suggests best-fit communities from the title, body,
+  and tags (keyword/tag matching in the browser, no AI) with "Also drop it in
+  v/…" (up to 3).
+- v/thestreets discovery: "Popping in v/…" strip and trending tags; hot sort
+  there uses `street_rank` (untagged and low-engagement drops rank lower).
+- Your space is built from blocks (About me, Top 8, song, now playing, pinned
+  drop, photos, links, wall, drops) the owner toggles and reorders (drag on
+  desktop, arrows everywhere) at `/settings/space`, with any colors for
+  accent/background/cards/text (live WCAG AA check, Fix button, auto-fix on
+  save), 5 fonts, rounded/sharp and flat/outlined/shadow cards, and a solid,
+  pattern (SVG, no gradients), or photo background. Live preview. Stored as
+  validated JSON in `profiles.layout`.
+- Settings: theme (dark default, light, system), feed density
+  (roomy/compact), and personal accent, per device; home community.
+- Design direction: dark first (near-black/charcoal, violet accent, soft
+  shadows, light borders), fixed left rail on desktop (Home, Streets,
+  Communities, Your space, Settings), new `/v` communities page. No photos
+  in the site design.
+- Migration `20261128000000_streets_tags_spaces.sql`: thestreets, `post_tags`,
+  `community_tags`, `community_listings`, `street_rank()`, `trending_tags`,
+  `post_feed` with tags, `profiles.layout` (`is_valid_layout()`,
+  `layout_paths_owned()`) and `home_community_id`; old theme columns dropped.
+  RLS verified on PGlite: 72/72 checks (all earlier ones plus spoofed
+  tags/claims/listings, non-mod accepts, author re-accepts, tag and listing
+  limits, foreign photo paths, http links, bad colors).
+- Checks: typecheck ✓, lint ✓, build ✓. Lighthouse (mobile, local prod):
+  home 100/100/100/100, v/thestreets 100/100/100/90, New drop
+  100/100/100/100, customize 100/100/100/100, Jasmine's space
+  100/100/100/90, #hair 100/100/100/90 (SEO point = streamed meta
+  description on dynamic routes), CLS ≤ 0.019. Screens checked at 390px and
+  1366px, dark and light.
+
 ## 2026-11-26 · Modern Clean + MySpace-style profiles (feat/modern-clean)
 
 - Design: Modern Clean tokens (solid colors, Inter + Bricolage Grotesque,

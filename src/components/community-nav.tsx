@@ -14,7 +14,7 @@ export async function CommunityNav() {
           {communities.map((community) => (
             <li key={community.id}>
               <NavLink
-                href={`/c/${community.slug}`}
+                href={`/v/${community.slug}`}
                 className="block rounded-full border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors"
                 activeClassName="border-accent bg-accent-soft text-accent"
                 inactiveClassName="border-border bg-surface text-text-muted hover:text-text"
@@ -35,7 +35,7 @@ export async function CommunityNav() {
             {communities.map((community) => (
               <li key={community.id}>
                 <NavLink
-                  href={`/c/${community.slug}`}
+                  href={`/v/${community.slug}`}
                   className="block rounded-control px-2 py-1.5 text-sm transition-colors"
                   activeClassName="bg-accent-soft font-medium text-accent"
                   inactiveClassName="text-text hover:bg-surface-muted"

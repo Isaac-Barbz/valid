@@ -3,15 +3,20 @@ import { Suspense } from "react";
 
 import { ComposeForm } from "@/components/compose-form";
 import { Card } from "@/components/ui/card";
-import { listCommunities } from "@/lib/data";
+import { DEFAULT_COMMUNITY } from "@/lib/config";
+import { getViewerProfile, listCommunitiesWithTags } from "@/lib/data";
 import { TERMS } from "@/lib/copy";
 
 export const metadata: Metadata = { title: TERMS.post.create };
 
 async function Compose({ searchParams }: Pick<PageProps<"/submit">, "searchParams">) {
-  const [{ c }, communities] = await Promise.all([searchParams, listCommunities()]);
-  const defaultCommunity = typeof c === "string" ? c : undefined;
-  return <ComposeForm communities={communities} defaultCommunity={defaultCommunity} />;
+  const [{ v }, communities, viewer] = await Promise.all([searchParams, listCommunitiesWithTags(), getViewerProfile()]);
+  // A community link (?v=slug) wins, then the person's home community, then v/thestreets.
+  const requested = typeof v === "string" ? v : null;
+  const defaultCommunity = [requested, viewer?.homeCommunitySlug, DEFAULT_COMMUNITY].find(
+    (slug) => slug && communities.some((community) => community.slug === slug),
+  );
+  return <ComposeForm communities={communities} defaultCommunity={defaultCommunity ?? DEFAULT_COMMUNITY} />;
 }
 
 export default function SubmitPage({ searchParams }: PageProps<"/submit">) {

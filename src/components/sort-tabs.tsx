@@ -1,12 +1,13 @@
 import Link from "next/link";
 
+import { TERMS } from "@/lib/copy";
 import { SORT_MODES, type SortMode } from "@/lib/types";
 
 const LABELS: Record<SortMode, string> = { hot: "Hot", new: "New", top: "Top" };
 
 export function SortTabs({ basePath, active }: { basePath: string; active: SortMode }) {
   return (
-    <nav aria-label="Sort posts" className="flex gap-1 rounded-control bg-surface-muted p-1">
+    <nav aria-label={`Sort ${TERMS.post.many}`} className="flex gap-1 rounded-control bg-surface-muted p-1">
       {SORT_MODES.map((mode) => (
         <Link
           key={mode}

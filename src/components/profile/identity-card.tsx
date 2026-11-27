@@ -39,7 +39,7 @@ export function IdentityCard({ profile, friendship }: { profile: Profile; friend
       )}
       <div className="flex flex-wrap justify-center gap-2">
         {friendship === "self" ? (
-          <Link href="#customize" className={buttonStyles("secondary")}>
+          <Link href="/settings/space" className={buttonStyles("secondary")}>
             <PaletteIcon className="size-4" />
             {TERMS.profile.customize}
           </Link>

@@ -1,4 +1,4 @@
-import type { ProfileTheme } from "@/lib/profile-theme";
+import type { ProfileLayout } from "@/lib/profile-layout";
 
 export type SortMode = "hot" | "new" | "top";
 
@@ -27,6 +27,7 @@ export interface Post {
   score: number;
   commentCount: number;
   createdAt: string;
+  tags: string[];
   /** The signed-in viewer's vote on this post. */
   viewerVote: VoteValue;
 }
@@ -74,13 +75,33 @@ export interface Profile extends PersonSummary {
   status: string | null;
   aboutMe: string | null;
   wantToMeet: string | null;
+  /** Storage path behind bannerUrl (kept when saving the editor). */
+  bannerPath: string | null;
   bannerUrl: string | null;
-  theme: ProfileTheme;
+  layout: ProfileLayout;
+  /** Public URLs for the storage paths in `layout` (photos, backdrop). */
+  mediaUrls: Record<string, string>;
+  homeCommunitySlug: string | null;
   song: ProfileSong | null;
   lastSeenAt: string | null;
   createdAt: string;
   friendCount: number;
   postCount: number;
+}
+
+export interface CommunityWithTags extends Community {
+  tags: string[];
+}
+
+export interface TrendingTag {
+  tag: string;
+  dropCount: number;
+}
+
+/** A community's best recent drop, for the "Popping in v/…" strip. */
+export interface PoppingCommunity {
+  community: Pick<Community, "slug" | "name">;
+  post: Pick<Post, "id" | "title" | "score" | "commentCount">;
 }
 
 /** How the signed-in viewer relates to a profile. */

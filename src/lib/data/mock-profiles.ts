@@ -1,4 +1,4 @@
-import { DEFAULT_THEME } from "@/lib/profile-theme";
+import { DEFAULT_LAYOUT, type ProfileLayout } from "@/lib/profile-layout";
 import type { PersonSummary, Profile, ProfileComment } from "@/lib/types";
 
 /**
@@ -8,9 +8,17 @@ import type { PersonSummary, Profile, ProfileComment } from "@/lib/types";
 
 export const DEMO_VIEWER = "starlight_jas";
 
-type SeedProfile = Omit<Profile, "id" | "createdAt" | "lastSeenAt" | "friendCount" | "postCount"> & {
+type SeedProfile = Omit<
+  Profile,
+  "id" | "createdAt" | "lastSeenAt" | "friendCount" | "postCount" | "mediaUrls" | "homeCommunitySlug"
+> & {
   seenMinutesAgo: number | null;
+  homeCommunity?: string;
 };
+
+function layoutWith(overrides: Partial<ProfileLayout>): ProfileLayout {
+  return { ...DEFAULT_LAYOUT, ...overrides };
+}
 
 const blank = {
   displayName: null,
@@ -21,8 +29,9 @@ const blank = {
   status: null,
   aboutMe: null,
   wantToMeet: null,
+  bannerPath: null,
   bannerUrl: null,
-  theme: DEFAULT_THEME,
+  layout: DEFAULT_LAYOUT,
   song: null,
   seenMinutesAgo: null,
 } satisfies Omit<SeedProfile, "username">;
@@ -37,9 +46,31 @@ const seedProfiles: SeedProfile[] = [
     mood: "✨ creative",
     status: "redesigning my whole page at 2am, don't judge",
     aboutMe:
-      "Night owl, playlist curator, chronic re-decorator of this page. I collect vintage cameras and bad puns. If you're in c/music we've probably argued about bridges.",
+      "Night owl, playlist curator, chronic re-decorator of this page. I collect vintage cameras and bad puns. If you're in v/music we've probably argued about bridges.",
     wantToMeet: "People who send songs instead of “hey”. Bakers. Anyone who still says “thanks for the add.”",
-    theme: { accent: "rose", background: "blush", font: "display" },
+    homeCommunity: "style",
+    layout: layoutWith({
+      blocks: [
+        { type: "pinned", visible: true },
+        { type: "about", visible: true },
+        { type: "nowPlaying", visible: true },
+        { type: "top8", visible: true },
+        { type: "song", visible: true },
+        { type: "links", visible: true },
+        { type: "wall", visible: true },
+        { type: "drops", visible: true },
+        { type: "photos", visible: false },
+      ],
+      colors: { accent: "#db2777", background: "#fdf2f8", card: "#ffffff", text: "#15151a" },
+      font: "display",
+      backdrop: { kind: "pattern", pattern: "dots", photoPath: null },
+      links: [
+        { label: "My playlists", url: "https://example.com/playlists" },
+        { label: "Camera finds", url: "https://example.com/cameras" },
+      ],
+      pinnedPostId: "p10",
+      nowPlaying: { kind: "listening", text: "Midnight Static on repeat", url: null },
+    }),
     song: { title: "Midnight Static", artist: "Neon Lullaby", url: null },
     seenMinutesAgo: 1,
   },
@@ -50,15 +81,21 @@ const seedProfiles: SeedProfile[] = [
     pronouns: "she/they",
     mood: "🎧 locked in",
     status: "second listen hits different",
-    aboutMe: "Bass player, vinyl hoarder, c/music regular.",
-    theme: { accent: "teal", background: "mint", font: "mono" },
+    aboutMe: "Bass player, vinyl hoarder, v/music regular.",
+    layout: layoutWith({
+      colors: { accent: "#0f766e", background: "#ecfdf5", card: "#ffffff", text: "#15151a" },
+      font: "mono",
+      cardShape: "sharp",
+      cardStyle: "outlined",
+      backdrop: { kind: "pattern", pattern: "grid", photoPath: null },
+    }),
     song: { title: "Low End Theory", artist: "Sample Band", url: null },
     seenMinutesAgo: 3,
   },
-  { ...blank, username: "devdiaries", displayName: "Dev", mood: "☕ caffeinated", theme: { accent: "blue", background: "sky", font: "sans" }, seenMinutesAgo: 240 },
-  { ...blank, username: "fitcheck_fran", displayName: "Fran", mood: "💅 pressed", theme: { accent: "amber", background: "butter", font: "serif" }, seenMinutesAgo: 30 },
+  { ...blank, username: "devdiaries", displayName: "Dev", mood: "☕ caffeinated", layout: layoutWith({ colors: { accent: "#1d4ed8", background: "#eff6ff", card: "#ffffff", text: "#15151a" } }), seenMinutesAgo: 240 },
+  { ...blank, username: "fitcheck_fran", displayName: "Fran", mood: "💅 pressed", layout: layoutWith({ colors: { accent: "#b45309", background: "#fefce8", card: "#ffffff", text: "#1c1917" }, font: "serif" }), seenMinutesAgo: 30 },
   { ...blank, username: "midnightmunch", displayName: "Munch", mood: "🧀 hungry", seenMinutesAgo: 2 },
-  { ...blank, username: "boxscore_ben", displayName: "Ben", mood: "🏀 game day", theme: { accent: "red", background: "plain", font: "display" }, seenMinutesAgo: null },
+  { ...blank, username: "boxscore_ben", displayName: "Ben", mood: "🏀 game day", layout: layoutWith({ font: "display", cardStyle: "flat" }), seenMinutesAgo: null },
   { ...blank, username: "valid_team", displayName: "Valid Team", mood: "👋 welcoming", seenMinutesAgo: null },
   { ...blank, username: "jade_wav", displayName: "Jade", seenMinutesAgo: 8 },
   { ...blank, username: "marcus_k", displayName: "Marcus", seenMinutesAgo: null },
@@ -98,7 +135,7 @@ interface SeedWallComment {
 
 const seedWall: SeedWallComment[] = [
   { id: "w1", profile: DEMO_VIEWER, author: "jade_wav", body: "your profile song is a CHOICE and i respect it 💖", minutesAgo: 120 },
-  { id: "w2", profile: DEMO_VIEWER, author: "marcus_k", body: "thanks for the add!! see you in c/music", minutesAgo: 60 * 26 },
+  { id: "w2", profile: DEMO_VIEWER, author: "marcus_k", body: "thanks for the add!! see you in v/music", minutesAgo: 60 * 26 },
   { id: "w3", profile: DEMO_VIEWER, author: "lulu_bakes", body: "Top 8 placement secured. Finally. 🏆", minutesAgo: 60 * 72 },
   { id: "w4", profile: "basslinebrie", author: DEMO_VIEWER, body: "that bassline thread was elite", minutesAgo: 300 },
 ];
@@ -118,9 +155,11 @@ function findSeed(username: string): SeedProfile | undefined {
 export function mockProfile(username: string, now: number, postCount: number): Profile | null {
   const seed = findSeed(username);
   if (!seed) return null;
-  const { seenMinutesAgo, ...rest } = seed;
+  const { seenMinutesAgo, homeCommunity, ...rest } = seed;
   return {
     ...rest,
+    mediaUrls: {},
+    homeCommunitySlug: homeCommunity ?? null,
     id: `u-${seed.username}`,
     createdAt: new Date(now - 1000 * 60 * 60 * 24 * 90).toISOString(),
     lastSeenAt: seenMinutesAgo === null ? null : new Date(now - seenMinutesAgo * 60_000).toISOString(),

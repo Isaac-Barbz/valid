@@ -39,21 +39,43 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `post_feed`/`comment_feed` views so anonymous authors stay hidden.
 - Every schema change is a new file in `supabase/migrations/` with RLS
   policies; never edit an applied migration.
-- Keep `hot_rank()` in SQL and `hotRank()` in `src/lib/ranking.ts` in sync.
+- Keep `hot_rank()`/`street_rank()` in SQL and `hotRank()`/`streetRank()` in
+  `src/lib/ranking.ts` in sync.
+- Keep the profile layout rules in sync: `is_valid_layout()` in SQL,
+  `src/lib/profile-layout-schema.ts` (zod), and `src/lib/profile-layout.ts`.
+- Tags are lowercase `[a-z0-9_]{2,32}`, max 10 per drop (`src/lib/tags.ts`
+  and the SQL checks); "also drop it in" is capped at 3 in both places.
 - The app must keep working in demo mode (no Supabase env vars).
 
-## Design: Modern Clean
+## Design: Modern Clean, dark first
 
+- **Dark mode is the primary, default feel** (`data-theme="dark"` on `<html>`;
+  people can switch to light or system in Settings). Deep charcoal and
+  near-black surfaces, moody and polished: nighttime LA / streets energy with
+  clean text. Violet accent, soft shadows, light 1px borders. Light mode
+  must still look right.
+- Layout: on desktop, a fixed left rail (Home, Streets = v/thestreets,
+  Communities, Your space, Settings) with a violet active state; on phones,
+  the top bar plus bottom tab bar.
+- **No photos in the site design**: no hero images, stock photos, or photo
+  placeholder slots. LA night scenes are mood inspiration only; convey the
+  vibe through dark solid colors, type, and layout. (Photos people upload to
+  their own space, like banners, backgrounds, and the Photos block, are user
+  content and fine.)
 - Solid colors only. **No gradients anywhere** (no `bg-gradient-*`,
   `linear-gradient`, `radial-gradient`, `conic-gradient`, gradient text, or
   gradient banners/avatars). Banners are an uploaded image or a solid color.
 - Clean typography: Inter for text, Bricolage Grotesque (`font-display`) for
   the wordmark and big headings. Real contrast (WCAG AA); depth comes from
   1px borders and the subtle `shadow-card` token only.
-- Profile customization (the MySpace part) is user-chosen but curated: solid
-  accent and page colors from the `--palette-*` / `--page-*` tokens, a font
-  from `FONTS`, a banner image, a song. No glitter or preset gradients. Ids
-  live in `src/lib/profile-theme.ts` and must match the SQL check constraints.
+- Profile customization (the MySpace part): owners pick any solid colors for
+  accent, background, cards, and text (these hex values are user data, the
+  one place raw colors are allowed), checked for WCAG AA in the editor and
+  auto-fixed on save. Plus a font from `FONTS`, card shape and style, a solid,
+  photo, or subtle SVG pattern background, and blocks they toggle and reorder.
+  No gradients, no custom CSS. See `src/lib/profile-layout.ts`.
+- Site-wide personal look (Settings): theme, feed density (`compact:`
+  variant), and an accent from the `--palette-*` tokens.
 
 ## Vocabulary
 
@@ -66,10 +88,12 @@ All user-facing names for core concepts come from `TERMS` in
 | Upvote | **Valid** ("12 valid"); downvote stays plain ("Downvote") |
 | Anonymous post | **Lowkey** (toggle "Post lowkey", badge "Lowkey") |
 | Profile | **Your space** in navigation; others' read "Jasmine's space" |
+| Community prefix | **v/** (`/v/style`); the default open community is **v/thestreets** |
+| Tag | **#tag** (`/t/braids`) |
 | Everything else | Plain words: comment, community, friends, feed, trending, mood |
 
 Code, routes, and the database keep the plain names (`posts`, `votes`,
-`is_anonymous`, `/u/…`).
+`is_anonymous`, `/u/…`); `/c/…` links redirect to `/v/…`.
 
 ## Code standards
 

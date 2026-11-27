@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { accentColor, avatarAccent, onAccentColor } from "@/lib/profile-theme";
+import { accentColor, avatarAccent, onAccentColor } from "@/lib/palette";
 import type { PersonSummary } from "@/lib/types";
 
 const SIZES = {
