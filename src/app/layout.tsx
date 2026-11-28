@@ -6,6 +6,7 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { SideRail } from "@/components/side-rail";
 import { SiteHeader } from "@/components/site-header";
 import { TERMS } from "@/lib/copy";
+import { ROW_BOOT_SCRIPT } from "@/lib/community-prefs";
 import { DEFAULT_LOOK, LOOK_BOOT_SCRIPT } from "@/lib/personal-look";
 
 import "./globals.css";
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // The boot script sets data-theme/density/accent from localStorage before hydration.
     <html lang="en" className={`${fontVariables} h-full antialiased`} data-theme={DEFAULT_LOOK.theme} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: LOOK_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: LOOK_BOOT_SCRIPT + ROW_BOOT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] font-sans md:pb-0 md:pl-rail">
         <SideRail />

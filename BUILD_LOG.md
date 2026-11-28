@@ -2,6 +2,26 @@
 
 Newest first. One short entry per PR.
 
+## 2026-11-27 · Personal community shortcut row (feat/personal-community-row)
+
+- The feed chip row (and the desktop shortcuts list) no longer lists every
+  community. It shows v/thestreets first, then only communities the person
+  has joined, then a "Find communities" chip to `/v`. Demo mode uses the
+  demo person's memberships (style, food, music); signed-out and new
+  accounts see just v/thestreets and Find communities.
+- Settings: "Show community shortcuts" toggle. Signed-in accounts save
+  `profiles.show_community_row`; demo and signed-out use localStorage.
+- Join / Leave on community pages (not v/thestreets, which stays open to
+  everyone). Owners can't leave. Joining or leaving updates the row.
+  Demo memberships are kept in localStorage so the row updates without a
+  database. The demo banner can preview the signed-out row.
+- Migration `20261129000000_community_row.sql`. RLS tests extended for the
+  new column and join/leave policies: 83/83 pass.
+- Checks: typecheck ✓, lint ✓ (0 warnings), build ✓. Lighthouse (mobile,
+  local prod): home 100/100/100/100, settings 100/100/100/100, v/style
+  100/100/100/90, v/thestreets 100/100/100/90 (SEO 90 is the streamed meta
+  description on dynamic routes), CLS 0. Screens checked at 390px.
+
 ## 2026-11-26 · v/thestreets, tags, and customizable spaces (feat/streets-and-customize)
 
 - Communities are now `v/` (`/v/[slug]`; old `/c/…` links redirect).

@@ -149,6 +149,21 @@
   --personal-accent-on: var(--palette-ink-on);
 }
 
+/* Hide the shortcut row before hydration when the device preference is off (demo / signed out). */
+:root[data-community-row="off"] .community-nav {
+  display: none;
+}
+
+/* Demo "Preview as signed out": only v/thestreets stays visible until the client trims the list. */
+/* Demo "Preview as signed out": only v/thestreets stays visible until the client trims the list. */
+:root[data-demo-as="signed-out"] .community-nav [data-nav-community]:not([data-nav-community="thestreets"]) {
+  display: none;
+}
+
+:root[data-demo-as="signed-out"] .demo-you-only {
+  display: none;
+}
+
 /* `compact:` styles apply when Feed density is compact. */
 @custom-variant compact (&:where([data-density="compact"] *));
 

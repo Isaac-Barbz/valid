@@ -116,5 +116,12 @@ export const mockListings: { community: string; postId: string; status: "accepte
   { community: "general", postId: "s2", status: "accepted" },
 ];
 
-/** Communities the demo "you" moderates, so the Suggested queue can be previewed. */
-export const mockModeratedBy: Record<string, string[]> = { starlight_jas: ["style", "food"] };
+/**
+ * Communities the demo "you" has joined. v/thestreets is always in the
+ * shortcut row, so it doesn't need to be listed here.
+ */
+export const mockMemberships: { slug: string; role: "member" | "moderator" | "owner" }[] = [
+  { slug: "style", role: "moderator" },
+  { slug: "food", role: "moderator" },
+  { slug: "music", role: "member" },
+];

@@ -50,8 +50,9 @@ user may read and write. Never add the `service_role`/secret key to this app.
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In the SQL editor, run the files in `supabase/migrations/` in order
-   (`20261126000000_foundation.sql`, `20261127000000_profiles.sql`, then
-   `20261128000000_streets_tags_spaces.sql`),
+   (`20261126000000_foundation.sql`, `20261127000000_profiles.sql`,
+   `20261128000000_streets_tags_spaces.sql`,
+   `20261129000000_community_row.sql`),
    then `supabase/seed.sql` for the starter communities. (Or with the Supabase
    CLI: `supabase link` then `supabase db push`.)
 3. Auth → URL Configuration: set the Site URL to the Vercel URL and add
@@ -102,6 +103,10 @@ and reports, all with Row Level Security.
 - Personal look (theme, feed density, accent) is per device in
   `localStorage` (`valid-look`), applied by an inline script before first
   paint. Dark is the default.
+- The feed shortcut row shows v/thestreets, then communities the person has
+  joined, then "Find communities" (`/v`). It can be hidden from Settings
+  (`profiles.show_community_row` for signed-in users; `localStorage` for
+  demo and signed-out).
 
 ## Scripts
 

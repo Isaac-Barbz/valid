@@ -56,7 +56,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   must still look right.
 - Layout: on desktop, a fixed left rail (Home, Streets = v/thestreets,
   Communities, Your space, Settings) with a violet active state; on phones,
-  the top bar plus bottom tab bar.
+  the top bar plus bottom tab bar. The feed shortcut row lists v/thestreets,
+  then communities the person has joined, then "Find communities"; it can be
+  hidden in Settings.
 - **No photos in the site design**: no hero images, stock photos, or photo
   placeholder slots. LA night scenes are mood inspiration only; convey the
   vibe through dark solid colors, type, and layout. (Photos people upload to

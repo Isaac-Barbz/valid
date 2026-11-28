@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { ClaimedTagsEditor } from "@/components/claimed-tags-editor";
+import { MembershipButton } from "@/components/membership-button";
 import { Feed, FeedSkeleton } from "@/components/feed";
 import { FeedLayout } from "@/components/feed-layout";
 import { PostCard } from "@/components/post-card";
@@ -13,9 +14,9 @@ import { SuggestionActions } from "@/components/suggestion-actions";
 import { TagChip } from "@/components/tag-chip";
 import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DEFAULT_COMMUNITY } from "@/lib/config";
+import { DEFAULT_COMMUNITY, isSupabaseConfigured } from "@/lib/config";
 import { capitalize, TERMS } from "@/lib/copy";
-import { getClaimedTags, getCommunity, getSuggestedPosts, viewerModerates } from "@/lib/data";
+import { getClaimedTags, getCommunity, getSuggestedPosts, getViewer, getViewerMembership, viewerModerates } from "@/lib/data";
 import { parseSort } from "@/lib/ranking";
 import type { Community } from "@/lib/types";
 
@@ -33,7 +34,12 @@ async function CommunityContent({ params, searchParams }: Props) {
   const sort = parseSort(query.sort);
   const isStreets = community.slug === DEFAULT_COMMUNITY;
 
-  const [claimedTags, isModerator] = await Promise.all([getClaimedTags(community), viewerModerates(community)]);
+  const [claimedTags, isModerator, membership, viewer] = await Promise.all([
+    getClaimedTags(community),
+    viewerModerates(community),
+    getViewerMembership(community),
+    getViewer(),
+  ]);
   const showSuggested = isModerator && !isStreets && query.view === "suggested";
   const basePath = `/v/${community.slug}`;
 
@@ -48,9 +54,17 @@ async function CommunityContent({ params, searchParams }: Props) {
               {community.slug} · {community.description}
             </p>
           </div>
-          <Link href={`/submit?v=${community.slug}`} className={buttonStyles("primary", "sm")}>
-            {TERMS.post.create}
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <MembershipButton
+              community={community.slug}
+              role={membership}
+              persist={isSupabaseConfigured && viewer ? "account" : "device"}
+              signedIn={Boolean(viewer) || !isSupabaseConfigured}
+            />
+            <Link href={`/submit?v=${community.slug}`} className={buttonStyles("primary", "sm")}>
+              {TERMS.post.create}
+            </Link>
+          </div>
         </div>
         {!isStreets && (claimedTags.length > 0 || isModerator) && (
           <div className="flex flex-col gap-2 border-t border-border pt-3">

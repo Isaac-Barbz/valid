@@ -12,6 +12,7 @@ import type {
   Community,
   CommunityWithTags,
   Friendship,
+  MemberRole,
   PersonSummary,
   PoppingCommunity,
   Post,
@@ -23,7 +24,7 @@ import type {
   VoteValue,
 } from "@/lib/types";
 
-import { mockClaimedTags, mockComments, mockCommunities, mockListings, mockModeratedBy, mockPosts } from "./mock";
+import { mockClaimedTags, mockComments, mockCommunities, mockListings, mockMemberships, mockPosts } from "./mock";
 import { DEMO_VIEWER, demoIncomingRequests, mockAreFriends, mockProfile, mockTopFriends, mockWall } from "./mock-profiles";
 
 /**
@@ -265,6 +266,7 @@ interface ProfileRow {
   banner_path: string | null;
   layout: unknown;
   home_community: { slug: string } | null;
+  show_community_row: boolean;
   song_title: string | null;
   song_artist: string | null;
   song_url: string | null;
@@ -274,7 +276,7 @@ interface ProfileRow {
 
 const PROFILE_COLUMNS =
   "id, username, display_name, avatar_url, pronouns, location, mood, status, about_me, want_to_meet, " +
-  "banner_path, layout, home_community:communities!profiles_home_community_id_fkey(slug), " +
+  "banner_path, layout, home_community:communities!profiles_home_community_id_fkey(slug), show_community_row, " +
   "song_title, song_artist, song_url, last_seen_at, created_at";
 
 interface PersonRow {
@@ -333,6 +335,7 @@ export async function getProfile(username: string): Promise<Profile | null> {
     layout,
     mediaUrls: Object.fromEntries(mediaPaths.map((path) => [path, publicUrl(path)])),
     homeCommunitySlug: row.home_community?.slug ?? null,
+    showCommunityRow: row.show_community_row,
     song: row.song_title ? { title: row.song_title, artist: row.song_artist ?? "", url: row.song_url } : null,
     lastSeenAt: row.last_seen_at,
     createdAt: row.created_at,
@@ -483,7 +486,10 @@ export async function getClaimedTags(community: Community): Promise<string[]> {
 
 /** Whether the viewer moderates this community (demo: the demo "you" moderates a few). */
 export async function viewerModerates(community: Community): Promise<boolean> {
-  if (!isSupabaseConfigured) return (mockModeratedBy[DEMO_VIEWER] ?? []).includes(community.slug);
+  if (!isSupabaseConfigured) {
+    const membership = mockMemberships.find((row) => row.slug === community.slug);
+    return membership?.role === "moderator" || membership?.role === "owner";
+  }
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("is_moderator", { target_community: community.id });
@@ -550,4 +556,61 @@ export async function getPinnedPost(profile: Pick<Profile, "username" | "layout"
   if (!profile.layout.pinnedPostId) return null;
   const post = await getPost(profile.layout.pinnedPostId);
   return post && post.author.username === profile.username ? post : null;
+}
+
+export async function getViewerMembership(community: Community): Promise<MemberRole | null> {
+  if (!isSupabaseConfigured) {
+    return mockMemberships.find((row) => row.slug === community.slug)?.role ?? null;
+  }
+
+  const viewer = await getViewer();
+  if (!viewer) return null;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("community_members")
+    .select("role")
+    .eq("community_id", community.id)
+    .eq("user_id", viewer.id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data?.role as MemberRole | undefined) ?? null;
+}
+
+function withStreetsFirst(streets: Community | undefined, joined: Community[]): Community[] {
+  const rest = joined.filter((community) => community.slug !== DEFAULT_COMMUNITY);
+  return streets ? [streets, ...rest] : rest;
+}
+
+/**
+ * Communities for the feed shortcut row: v/thestreets first, then ones the
+ * viewer has joined. Signed-out and new accounts only get v/thestreets;
+ * demo mode uses the demo person's memberships.
+ */
+export async function listNavCommunities(): Promise<Community[]> {
+  const streets = (await getCommunity(DEFAULT_COMMUNITY)) ?? undefined;
+
+  if (!isSupabaseConfigured) {
+    const joined = mockMemberships.flatMap((row) => {
+      const community = mockCommunities.find((item) => item.slug === row.slug);
+      return community ? [community] : [];
+    });
+    return withStreetsFirst(streets, joined);
+  }
+
+  const viewer = await getViewer();
+  if (!viewer) return withStreetsFirst(streets, []);
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("community_members")
+    .select("joined_at, community_id, communities(id, slug, name, description)")
+    .eq("user_id", viewer.id)
+    .order("joined_at", { ascending: false });
+  if (error) throw error;
+  const joined = (data ?? []).flatMap((row) => {
+    const value = (row as { communities?: Community | Community[] | null }).communities;
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  });
+  return withStreetsFirst(streets, joined);
 }

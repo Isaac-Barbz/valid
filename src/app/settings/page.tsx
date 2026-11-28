@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { CommunityRowSetting } from "@/components/community-row-setting";
 import { HomeCommunityForm } from "@/components/home-community-form";
 import { PaletteIcon } from "@/components/icons";
 import { LookSettings } from "@/components/look-settings";
 import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TERMS } from "@/lib/copy";
-import { getViewerProfile, listCommunities } from "@/lib/data";
+import { isSupabaseConfigured } from "@/lib/config";
+import { getViewer, getViewerProfile, listCommunities } from "@/lib/data";
 
 export const metadata: Metadata = { title: TERMS.settings.title };
 
@@ -35,6 +37,14 @@ async function AccountSettings() {
   );
 }
 
+
+async function CommunityRowSettingSlot() {
+  const viewer = await getViewer();
+  const profile = viewer ? await getViewerProfile() : null;
+  const accountValue = isSupabaseConfigured && viewer ? (profile?.showCommunityRow ?? true) : null;
+  return <CommunityRowSetting accountValue={accountValue} />;
+}
+
 export default function SettingsPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-6">
@@ -45,6 +55,9 @@ export default function SettingsPage() {
           <p className="text-sm text-text-muted">Saved on this device. Other people&apos;s spaces keep their own colors.</p>
         </div>
         <LookSettings />
+        <Suspense fallback={<div className="h-14 animate-pulse rounded-control bg-surface-muted" />}>
+          <CommunityRowSettingSlot />
+        </Suspense>
       </Card>
       <Card className="flex flex-col gap-4 p-4 sm:p-6">
         <h2 className="text-lg font-bold">{TERMS.profile.own}</h2>

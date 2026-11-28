@@ -10,7 +10,7 @@ export const DEMO_VIEWER = "starlight_jas";
 
 type SeedProfile = Omit<
   Profile,
-  "id" | "createdAt" | "lastSeenAt" | "friendCount" | "postCount" | "mediaUrls" | "homeCommunitySlug"
+  "id" | "createdAt" | "lastSeenAt" | "friendCount" | "postCount" | "mediaUrls" | "homeCommunitySlug" | "showCommunityRow"
 > & {
   seenMinutesAgo: number | null;
   homeCommunity?: string;
@@ -160,6 +160,7 @@ export function mockProfile(username: string, now: number, postCount: number): P
     ...rest,
     mediaUrls: {},
     homeCommunitySlug: homeCommunity ?? null,
+    showCommunityRow: true,
     id: `u-${seed.username}`,
     createdAt: new Date(now - 1000 * 60 * 60 * 24 * 90).toISOString(),
     lastSeenAt: seenMinutesAgo === null ? null : new Date(now - seenMinutesAgo * 60_000).toISOString(),
