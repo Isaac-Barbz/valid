@@ -70,12 +70,9 @@ function subscribe(onChange: () => void) {
 /** Theme, feed density, and accent for this device. Saved instantly to localStorage. */
 export function LookSettings() {
   // `undefined` while server rendering: the saved look only exists in the browser.
-  const stored = useSyncExternalStore(
-    subscribe,
-    () => localStorage.getItem(LOOK_STORAGE_KEY),
-    () => undefined,
-  );
-  if (stored === undefined) return <div className="h-64 animate-pulse rounded-control bg-surface-muted" />;
+  // Server and the first client paint use the defaults; localStorage applies
+  // right after hydration. The controls don't change size, so this isn't a shift.
+  const stored = useSyncExternalStore(subscribe, () => localStorage.getItem(LOOK_STORAGE_KEY), () => null);
   const look = readLook(stored);
 
   function update(next: Partial<PersonalLook>) {

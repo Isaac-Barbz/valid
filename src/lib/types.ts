@@ -6,6 +6,8 @@ export const SORT_MODES: readonly SortMode[] = ["hot", "new", "top"];
 
 export type VoteValue = -1 | 0 | 1;
 
+export type MemberRole = "member" | "moderator" | "owner";
+
 export interface Community {
   id: string;
   slug: string;
@@ -82,6 +84,8 @@ export interface Profile extends PersonSummary {
   /** Public URLs for the storage paths in `layout` (photos, backdrop). */
   mediaUrls: Record<string, string>;
   homeCommunitySlug: string | null;
+  /** When false, the feed hides the community shortcut row. */
+  showCommunityRow: boolean;
   song: ProfileSong | null;
   lastSeenAt: string | null;
   createdAt: string;

@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { DEMO_MODE_MESSAGE, isSupabaseConfigured } from "@/lib/config";
+import { DEFAULT_COMMUNITY, DEMO_MODE_MESSAGE, isSupabaseConfigured } from "@/lib/config";
 import { TERMS } from "@/lib/copy";
 import { normalizeTag, extractTags } from "@/lib/tags";
 import { parseLayoutForSave } from "@/lib/profile-layout-schema";
@@ -299,6 +299,77 @@ export async function setHomeCommunity(_prev: ActionResult | null, formData: For
   }
   const { error } = await supabase.from("profiles").update({ home_community_id: communityId }).eq("id", userId);
   if (error) return { ok: false, error: "Couldn't save that. Try again." };
+  refresh();
+  return { ok: true };
+}
+
+
+const showRowSchema = z.object({ show: z.boolean() });
+
+/** Saves whether the feed shortcut row is visible. Demo and signed-out clients keep this in localStorage. */
+export async function setShowCommunityRow(input: z.input<typeof showRowSchema>): Promise<ActionResult> {
+  const parsed = showRowSchema.safeParse(input);
+  if (!parsed.success) return firstIssue(parsed.error);
+  if (!isSupabaseConfigured) return { ok: true };
+
+  const session = await signedInClient();
+  if (!session) return { ok: true };
+  const { error } = await session.supabase
+    .from("profiles")
+    .update({ show_community_row: parsed.data.show })
+    .eq("id", session.userId);
+  if (error) return { ok: false, error: "Couldn't save that. Try again." };
+  refresh();
+  return { ok: true };
+}
+
+const membershipSchema = z.object({
+  community: z.string().min(1),
+  action: z.enum(["join", "leave"]),
+});
+
+export async function changeMembership(input: z.input<typeof membershipSchema>): Promise<ActionResult> {
+  const parsed = membershipSchema.safeParse(input);
+  if (!parsed.success) return firstIssue(parsed.error);
+  if (!isSupabaseConfigured) return { ok: true };
+
+  const session = await signedInClient();
+  if (!session) return { ok: false, error: SIGN_IN_REQUIRED, needsSignIn: true };
+  const { supabase, userId } = session;
+
+  const { data: community } = await supabase
+    .from("communities")
+    .select("id, slug")
+    .eq("slug", parsed.data.community)
+    .maybeSingle();
+  if (!community) return { ok: false, error: `That ${TERMS.community.one} doesn't exist.` };
+  if (community.slug === DEFAULT_COMMUNITY) {
+    return { ok: false, error: `${TERMS.community.prefix}${DEFAULT_COMMUNITY} is open to everyone.` };
+  }
+
+  if (parsed.data.action === "join") {
+    const { error } = await supabase
+      .from("community_members")
+      .insert({ community_id: community.id, user_id: userId, role: "member" });
+    if (error) return { ok: false, error: `Couldn't join that ${TERMS.community.one}. Try again.` };
+  } else {
+    const { data: membership } = await supabase
+      .from("community_members")
+      .select("role")
+      .eq("community_id", community.id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (membership?.role === "owner") {
+      return { ok: false, error: `Owners stay in their ${TERMS.community.one}.` };
+    }
+    const { error } = await supabase
+      .from("community_members")
+      .delete()
+      .eq("community_id", community.id)
+      .eq("user_id", userId)
+      .neq("role", "owner");
+    if (error) return { ok: false, error: `Couldn't leave that ${TERMS.community.one}. Try again.` };
+  }
   refresh();
   return { ok: true };
 }

@@ -1,6 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 
-import { CommunityNav, CommunityNavSkeleton } from "@/components/community-nav";
+import { CommunityNavSlot, CommunityNavSkeleton } from "@/components/community-nav-slot";
 import { TopFriendsWidget } from "@/components/viewer-widgets";
 
 /** Two-column page frame: main content plus a sidebar (Top 8 and communities). */
@@ -15,7 +15,7 @@ export function FeedLayout({ children }: { children: ReactNode }) {
             </Suspense>
           </div>
           <Suspense fallback={<CommunityNavSkeleton />}>
-            <CommunityNav />
+            <CommunityNavSlot />
           </Suspense>
         </div>
       </aside>
